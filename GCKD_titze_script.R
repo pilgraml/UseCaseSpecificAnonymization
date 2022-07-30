@@ -6,7 +6,6 @@ pacman::p_load(tidyr, stringr, dplyr, openxlsx, naniar, emmeans, multcomp,
 
 # Datensatz
 setwd("Z:/GCKD/2022-07-11_Daten_für_LPilgram/")
-# Titze <- as_tibble(read.csv2("GCKD_BL-Daten_für_LPilgram_2022-06-03_test.csv", header = TRUE, sep = ";"))
 Titze <- as_tibble(read.xlsx("GCKD_BL-Daten_für_LPilgram_2022-06-03_test.xlsx", sep = ";"))
 dim(Titze)
 View(Titze)
@@ -873,25 +872,3 @@ Titze_protein <- Titze %>% subset(BL_uacr > 300 | BL_ualbuvalue )
 # Suppl. table 2: GFR categories
 
 
-# Missinganalysen
-## Anzahl Missing 
-### Anzahl Missing gesamt
-sum(is.na(Titze))
-
-### Anzahl Missing pro Variable (tabellarisch)
-Titze_Miss_Sum <- miss_var_summary(Titze)
-View(Titze_Miss_Sum)
-### Anthropometric Data (ku) > Nutzen der Messwerte (Missing durch Amputation, Verweigerung, Immobilität etc)
-sum(is.na(Titze$BL_ku_gr_pat))
-sum(is.na(Titze$BL_ku_groesse))
-sum(is.na(Titze$BL_ku_gew_pat))
-sum(is.na(Titze$BL_ku_gewicht))
-sum(is.na(Titze$BL_ku_bmi))
-
-## Korrelationsmatrix der Missings (tabellarisch)
-Titze_Miss <- as.data.frame(abs(is.na(Titze)))
-Titze_Miss_Cor <- cor(Titze_Miss)
-View(Titze_Miss_Cor)
-
-## Visualisierung
-Titze %>% missing_plot()
