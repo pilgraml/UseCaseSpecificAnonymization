@@ -6,8 +6,8 @@ pacman::p_load(tidyr, stringr, dplyr, openxlsx, naniar, emmeans, multcomp,
 
 # Dataset
 setwd("Z:/GCKD/")
-GCKD_df1 <- as_tibble(read.xlsx("GCKD_df1_origin.xlsx", sep = ";"))
-#GCKD_df1 <- as_tibble(read.xlsx("GCKD_df1_anonymized.xlsx", sep = ";"))
+#GCKD_df1 <- as_tibble(read.xlsx("GCKD_df1_origin.xlsx", sep = ";"))
+GCKD_df1 <- as_tibble(read.xlsx("GCKD_df1_generic_k2s10.xlsx", sep = ";"))
 dim(GCKD_df1)
 
 # !! Anonymized dataset only !! 
@@ -15,8 +15,8 @@ dim(GCKD_df1)
 ## Marking NA
 GCKD_df1 <- GCKD_df1 %>% na_if("*")
 GCKD_df1 <- GCKD_df1 %>% na_if("NULL")
+GCKD_df1 <- GCKD_df1 %>% na_if("null")
 ## Data Type
-GCKD_df1$BL_ku_bmi <- as.integer(GCKD_df1$BL_ku_bmi)
 GCKD_df1$BL_ku_ruhepuls <- as.integer(GCKD_df1$BL_ku_ruhepuls)
 GCKD_df1$BL_ku_dia <- as.integer(GCKD_df1$BL_ku_dia)
 GCKD_df1$BL_ku_sys <- as.integer(GCKD_df1$BL_ku_sys)
@@ -26,83 +26,128 @@ GCKD_df1$BL_cysvalue <- as.integer(GCKD_df1$BL_cysvalue)
 GCKD_df1$BL_gfr_mdrd <- as.integer(GCKD_df1$BL_gfr_mdrd)
 GCKD_df1$BL_uacr <- as.integer(GCKD_df1$BL_uacr)
 ## Distribution of Quasi-Identifiers
-### Figure settings: fill="cyan4" in anonymized datasets
+### Figure settings: fill="#73A1AA" in anonymized datasets
 table(GCKD_df1$BL_age, useNA = "always")
 prop.table(table(GCKD_df1$BL_age))
 GCKD_df1 %>%
   filter(!is.na(BL_age)) %>% 
   ggplot(aes(x=as.factor(BL_age))) +
-  geom_bar(color="white", fill="cyan4")
+  geom_bar(color="white", fill="#73A1AA")
 table(GCKD_df1$BL_ku_height_cm, useNA = "always")
 prop.table(table(GCKD_df1$BL_ku_height_cm))
 GCKD_df1 %>%
   filter(!is.na(BL_ku_height_cm)) %>% 
   ggplot(aes(x=as.factor(BL_ku_height_cm))) +
-  geom_bar(color="white", fill="cyan4")
+  geom_bar(color="white", fill="#73A1AA")
+GCKD_df1$BL_ku_weight <- factor(GCKD_df1$BL_ku_weight, levels = c("[40, 60[", "[60, 80[", "[80, 100[", "[100, 120[", "[120, 140[", "[140, 160[", "[160, 180[", "[180, 200["))
 table(GCKD_df1$BL_ku_weight, useNA = "always")
 prop.table(table(GCKD_df1$BL_ku_weight))
 GCKD_df1 %>%
   filter(!is.na(BL_ku_weight)) %>% 
   ggplot(aes(x=as.factor(BL_ku_weight))) +
-  geom_bar(color="white", fill="cyan4")
+  geom_bar(color="white", fill="#73A1AA")
+GCKD_df1$BL_ku_bmi <- factor(GCKD_df1$BL_ku_bmi, levels = c("[5, 18.5[", "[18.5, 25[", "[25, 30[", "[30, 35[", "[35, 40[", "[40, 250["))
 table(GCKD_df1$BL_ku_bmi, useNA = "always")
 prop.table(table(GCKD_df1$BL_ku_bmi))
 GCKD_df1 %>%
   filter(!is.na(BL_ku_bmi)) %>% 
   ggplot(aes(x=as.factor(BL_ku_bmi))) +
-  geom_bar(color="white", fill="cyan4")
+  geom_bar(color="white", fill="#73A1AA")
 ## Table 1
+table(GCKD_df1$BL_age, useNA = "always")
+prop.table(table(GCKD_df1$BL_age))
+table(GCKD_df1$BL_ku_height_cm,  useNA = "always")
+prop.table(table(GCKD_df1$BL_ku_height_cm))
+table(GCKD_df1$BL_ku_weight,  useNA = "always")
+prop.table(table(GCKD_df1$BL_ku_weight))
+table(GCKD_df1$BL_ku_bmi,  useNA = "always")
+prop.table(table(GCKD_df1$BL_ku_bmi))
+table(GCKD_df1$BL_ku_bmi == "[5, 18.5[" | GCKD_df1$BL_ku_bmi == "[18.5, 25[",  useNA = "always")
+prop.table(table(GCKD_df1$BL_ku_bmi == "[5, 18.5[" | GCKD_df1$BL_ku_bmi == "[18.5, 25["))
+table(GCKD_df1$BL_ku_bmi == "[25, 30[",  useNA = "always")
+prop.table(table(GCKD_df1$BL_ku_bmi == "[25, 30["))
+table(GCKD_df1$BL_ku_bmi == "[30, 35[" | GCKD_df1$BL_ku_bmi == "[35, 40[" | GCKD_df1$BL_ku_bmi == "[40, 250[",  useNA = "always")
+prop.table(table(GCKD_df1$BL_ku_bmi == "[30, 35[" | GCKD_df1$BL_ku_bmi == "[35, 40[" | GCKD_df1$BL_ku_bmi == "[40, 250["))
 ### Subsetting female
 GCKD_df1_fem <- GCKD_df1 %>% subset(dem_sex == "Female")
+table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_age, useNA = "always")
+prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_age), 1)
+table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_height_cm,  useNA = "always")
+prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_height_cm), 1)
+table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_weight,  useNA = "always")
+prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_weight), 1)
+table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_bmi,  useNA = "always")
+prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_bmi), 1)
+table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_bmi == "[5, 18.5[" | GCKD_df1_fem$BL_ku_bmi == "[18.5, 25[",  useNA = "always")
+prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_bmi == "[5, 18.5[" | GCKD_df1_fem$BL_ku_bmi == "[18.5, 25["), 1)
+table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_bmi == "[25, 30[",  useNA = "always")
+prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_bmi == "[25, 30["), 1)
+table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_bmi == "[30, 35[" | GCKD_df1_fem$BL_ku_bmi == "[35, 40[" | GCKD_df1_fem$BL_ku_bmi == "[40, 250[",  useNA = "always")
+prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_bmi == "[30, 35[" | GCKD_df1_fem$BL_ku_bmi == "[35, 40[" | GCKD_df1_fem$BL_ku_bmi == "[40, 250["), 1)
 ### Subsetting male
 GCKD_df1_male <- GCKD_df1 %>% subset(dem_sex == "Male")
-
+table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_age, useNA = "always")
+prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_age), 1)
+table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_height_cm,  useNA = "always")
+prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_height_cm), 1)
+table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_weight,  useNA = "always")
+prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_weight), 1)
+table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_bmi,  useNA = "always")
+prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_bmi), 1)
+table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_bmi == "[5, 18.5[" | GCKD_df1_male$BL_ku_bmi == "[18.5, 25[",  useNA = "always")
+prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_bmi == "[5, 18.5[" | GCKD_df1_male$BL_ku_bmi == "[18.5, 25["), 1)
+table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_bmi == "[25, 30[",  useNA = "always")
+prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_bmi == "[25, 30["), 1)
+table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_bmi == "[30, 35[" | GCKD_df1_male$BL_ku_bmi == "[35, 40[" | GCKD_df1_male$BL_ku_bmi == "[40, 250[",  useNA = "always")
+prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_bmi == "[30, 35[" | GCKD_df1_male$BL_ku_bmi == "[35, 40[" | GCKD_df1_male$BL_ku_bmi == "[40, 250["), 1)
 
 # !! Original dataset only !!
 
 ## Distribution of Quasi-Identifiers
-### Figure settings: fill="deeppink4" in anonymized datasets
+### Figure settings: fill="#B83674" in original dataset
 sum(is.na(GCKD_df1$BL_age))
 GCKD_df1 %>%
   summarise_at(vars(BL_age), list(~ round(mean(., na.rm=TRUE),1)))
 GCKD_df1 %>%
   summarise_at(vars(BL_age), list(~ round(sd(., na.rm=TRUE),1)))
 ggplot(GCKD_df1, aes(x=BL_age)) +
-  geom_histogram(binwidth=1, colour="white", fill="deeppink4")
+  geom_histogram(binwidth=1, colour="white", fill="#B83674")
 sum(is.na(GCKD_df1$BL_ku_height_cm))
 GCKD_df1 %>%
   summarise_at(vars(BL_ku_height_cm), list(~ round(mean(., na.rm=TRUE),1)))
 GCKD_df1 %>%
   summarise_at(vars(BL_ku_height_cm), list(~ round(sd(., na.rm=TRUE),1)))
 ggplot(GCKD_df1, aes(x=BL_ku_height_cm)) +
-  geom_histogram(binwidth=1, colour="white", fill="deeppink4")
+  geom_histogram(binwidth=1, colour="white", fill="#B83674")
 sum(is.na(GCKD_df1$BL_ku_weight))
 GCKD_df1 %>%
   summarise_at(vars(BL_ku_weight), list(~ round(mean(., na.rm=TRUE),1)))
 GCKD_df1 %>%
   summarise_at(vars(BL_ku_weight), list(~ round(sd(., na.rm=TRUE),1)))
 ggplot(GCKD_df1, aes(x=BL_ku_weight)) +
-  geom_histogram(binwidth=1, colour="white", fill="deeppink4")
+  geom_histogram(binwidth=1, colour="white", fill="#B83674")
 sum(is.na(GCKD_df1$BL_ku_bmi))
 GCKD_df1 %>%
   summarise_at(vars(BL_ku_bmi), list(~ round(mean(., na.rm=TRUE),1)))
 GCKD_df1 %>%
   summarise_at(vars(BL_ku_bmi), list(~ round(sd(., na.rm=TRUE),1)))
 ggplot(GCKD_df1, aes(x=BL_ku_bmi)) +
-  geom_histogram(binwidth=1, colour="white", fill="deeppink4")
+  geom_histogram(binwidth=1, colour="white", fill="#B83674")
 ## Table 1
 GCKD_df1 %>%
   summarise_at(vars(BL_age), list(~ round(mean(., na.rm=TRUE),1)))
 GCKD_df1 %>%
   summarise_at(vars(BL_age), list(~ round(sd(., na.rm=TRUE),1)))
-sum(is.na(GCKD_df1$BL_age))
 GCKD_df1 %>%
   summarise_at(vars(BL_ku_height_cm, BL_ku_weight, BL_ku_bmi), list(~ round(mean(., na.rm=TRUE),1)))
 GCKD_df1 %>%
   summarise_at(vars(BL_ku_height_cm, BL_ku_weight, BL_ku_bmi), list(~ round(sd(., na.rm=TRUE),1)))
-sum(is.na(GCKD_df1$BL_ku_height_cm))
-sum(is.na(GCKD_df1$BL_ku_weight))
-sum(is.na(GCKD_df1$BL_ku_bmi))
+table(GCKD_df1$BL_ku_bmi > 30,  useNA = "always")
+prop.table(table(GCKD_df1$BL_ku_bmi > 30))
+table(GCKD_df1$BL_ku_bmi <= 30 & GCKD_df1$BL_ku_bmi > 25,  useNA = "always")
+prop.table(table(GCKD_df1$BL_ku_bmi <= 30 & GCKD_df1$BL_ku_bmi > 25))
+table(GCKD_df1$BL_ku_bmi <= 25,  useNA = "always")
+prop.table(table(GCKD_df1$BL_ku_bmi <= 25))
 ### Subsetting female
 GCKD_df1_fem <- GCKD_df1 %>% subset(dem_sex == "Female")
 GCKD_df1_fem %>% group_by(diabetes) %>%
@@ -113,6 +158,12 @@ GCKD_df1_fem %>% group_by(diabetes) %>%
   summarise_at(vars(BL_ku_height_cm, BL_ku_weight, BL_ku_bmi), list(~ round(mean(., na.rm=TRUE),1)))
 GCKD_df1_fem %>% group_by(diabetes) %>%
   summarise_at(vars(BL_ku_height_cm, BL_ku_weight, BL_ku_bmi), list(~ round(sd(., na.rm=TRUE),1)))
+table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_bmi > 30,  useNA = "always")
+prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_bmi > 30))
+table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_bmi > 25 & GCKD_df1_fem$BL_ku_bmi <= 30,  useNA = "always")
+prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_bmi > 25 & GCKD_df1_fem$BL_ku_bmi <= 30))
+table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_bmi <= 25,  useNA = "always")
+prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_bmi <= 25))
 ### Subsetting male
 GCKD_df1_male <- GCKD_df1 %>% subset(dem_sex == "Male")
 GCKD_df1_male %>% group_by(diabetes) %>%
@@ -123,25 +174,30 @@ GCKD_df1_male %>% group_by(diabetes) %>%
   summarise_at(vars(BL_ku_height_cm, BL_ku_weight, BL_ku_bmi), list(~ round(mean(., na.rm=TRUE),1)))
 GCKD_df1_male %>% group_by(diabetes) %>%
   summarise_at(vars(BL_ku_height_cm, BL_ku_weight, BL_ku_bmi), list(~ round(sd(., na.rm=TRUE),1)))
-
+table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_bmi > 30,  useNA = "always")
+prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_bmi > 30))
+table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_bmi > 25 & GCKD_df1_male$BL_ku_bmi <= 30,  useNA = "always")
+prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_bmi > 25 & GCKD_df1_male$BL_ku_bmi <= 30))
+table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_bmi <= 25,  useNA = "always")
+prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_bmi <= 25))
 
 # !! All datasets !!
 
 ## Distribution of Quasi-Identifiers
-### Figure settings: fill="deeppink4" in original dataset, "cyan4" in anonymized datasets
+### Figure settings: fill="#B83674" in original dataset, "#73A1AA" in anonymized datasets
 table(GCKD_df1$dem_sex, useNA = "always")
 prop.table(table(GCKD_df1$dem_sex))
 GCKD_df1 %>%
   filter(!is.na(dem_sex)) %>% 
   ggplot(aes(x=as.factor(dem_sex))) +
-  geom_bar(color="white", fill="cyan4", width=0.5) +
+  geom_bar(color="white", fill="#73A1AA", width=0.5) +
   theme(aspect.ratio = 3/2)
 table(GCKD_df1$biopsy, useNA = "always")
 prop.table(table(GCKD_df1$biopsy))
 GCKD_df1 %>%
   filter(!is.na(biopsy)) %>% 
   ggplot(aes(x=as.factor(biopsy))) +
-  geom_bar(color="white", fill="deeppink4", width=0.5) +
+  geom_bar(color="white", fill="#73A1AA", width=0.5) +
   theme(aspect.ratio = 3/2)
 ## Table 1: Baseline characteristics
 table(GCKD_df1$aa_stroke, useNA = "always")
@@ -165,30 +221,32 @@ prop.table(table(GCKD_df1$smoking))
 table(GCKD_df1$hospital, useNA = "always")
 prop.table(table(GCKD_df1$hospital))
 GCKD_df1 %>%
-  summarise_at(vars(BL_ku_ruhepuls, BL_ku_dia, BL_ku_sys, BL_ku_map), list(~ round(mean(., na.rm=TRUE),1)))
+  summarise_at(vars(BL_ku_ruhepuls, BL_ku_sys, BL_ku_dia, BL_ku_map), list(~ round(mean(., na.rm=TRUE),1)))
 GCKD_df1 %>%
-  summarise_at(vars(BL_ku_ruhepuls, BL_ku_dia, BL_ku_sys, BL_ku_map), list(~ round(sd(., na.rm=TRUE),1)))
-sum(is.na(GCKD_df1$BL_ku_ruhepuls))
-sum(is.na(GCKD_df1$BL_ku_dia))
-sum(is.na(GCKD_df1$BL_ku_sys))
-sum(is.na(GCKD_df1$BL_ku_map))
-table(GCKD_df1$BL_ku_bmi_cat, useNA = "always")
-prop.table(table(GCKD_df1$BL_ku_bmi_cat))
-# RR < 130/80mmHg
-# RR < 140/90mmHg
+  summarise_at(vars(BL_ku_ruhepuls, BL_ku_sys, BL_ku_dia, BL_ku_map), list(~ round(sd(., na.rm=TRUE),1)))
+table(GCKD_df1$BL_ku_sys < 130 & GCKD_df1$BL_ku_dia < 80,  useNA = "always")
+prop.table(table(GCKD_df1$BL_ku_sys < 130 & GCKD_df1$BL_ku_dia < 80))
+table(GCKD_df1$BL_ku_sys < 140 & GCKD_df1$BL_ku_dia < 90,  useNA = "always")
+prop.table(table(GCKD_df1$BL_ku_sys < 140 & GCKD_df1$BL_ku_dia < 90))
 GCKD_df1 %>%
   summarise_at(vars(BL_creavalue, BL_cysvalue, BL_gfr_mdrd), list(~ round(mean(., na.rm=TRUE),1)))
 GCKD_df1 %>%
   summarise_at(vars(BL_creavalue, BL_cysvalue, BL_gfr_mdrd), list(~ round(sd(., na.rm=TRUE),1)))
+table(GCKD_df1$BL_gfr_mdrd >= 60,  useNA = "always")
+prop.table(table(GCKD_df1$BL_gfr_mdrd >= 60))
+table(GCKD_df1$BL_gfr_mdrd >= 45 & GCKD_df1$BL_gfr_mdrd < 60,  useNA = "always")
+prop.table(table(GCKD_df1$BL_gfr_mdrd >= 45 & GCKD_df1$BL_gfr_mdrd < 60))
+table(GCKD_df1$BL_gfr_mdrd >= 30 & GCKD_df1$BL_gfr_mdrd < 45,  useNA = "always")
+prop.table(table(GCKD_df1$BL_gfr_mdrd >= 30 & GCKD_df1$BL_gfr_mdrd < 45))
+table(GCKD_df1$BL_gfr_mdrd < 30,  useNA = "always")
+prop.table(table(GCKD_df1$BL_gfr_mdrd < 30))
 summary(GCKD_df1$BL_uacr)
-sum(is.na(GCKD_df1$BL_creavalue))
-sum(is.na(GCKD_df1$BL_cysvalue))
-sum(is.na(GCKD_df1$BL_gfr_mdrd))
-sum(is.na(GCKD_df1$BL_uacr))
-table(GCKD_df1$BL_gfr_mdrd_cat, useNA = "always")
-prop.table(table(GCKD_df1$BL_gfr_mdrd_cat))
-table(GCKD_df1$BL_uacr_cat, useNA = "always")
-prop.table(table(GCKD_df1$BL_uacr_cat))
+table(GCKD_df1$BL_uacr < 30,  useNA = "always")
+prop.table(table(GCKD_df1$BL_uacr < 30))
+table(GCKD_df1$BL_uacr >= 30 & GCKD_df1$BL_uacr <= 300,  useNA = "always")
+prop.table(table(GCKD_df1$BL_uacr >= 30 & GCKD_df1$BL_uacr <= 300))
+table(GCKD_df1$BL_uacr > 300,  useNA = "always")
+prop.table(table(GCKD_df1$BL_uacr > 300))
 table(GCKD_df1$BL_med_raas_ace, useNA = "always")
 prop.table(table(GCKD_df1$BL_med_raas_ace))
 table(GCKD_df1$BL_med_raas_at1, useNA = "always")
@@ -235,25 +293,35 @@ prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$smoking), 1)
 table(GCKD_df1_fem$diabetes, GCKD_df1_fem$hospital, useNA = "always")
 prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$hospital), 1)
 GCKD_df1_fem %>% group_by(diabetes) %>%
-  summarise_at(vars(BL_ku_ruhepuls, BL_ku_dia, BL_ku_sys, BL_ku_map), list(~ round(mean(., na.rm=TRUE),1)))
+  summarise_at(vars(BL_ku_ruhepuls, BL_ku_sys, BL_ku_dia, BL_ku_map), list(~ round(mean(., na.rm=TRUE),1)))
 GCKD_df1_fem %>% group_by(diabetes) %>%
-  summarise_at(vars(BL_ku_ruhepuls, BL_ku_dia, BL_ku_sys, BL_ku_map), list(~ round(sd(., na.rm=TRUE),1)))
-table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_bmi_cat, useNA = "always")
-prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_bmi_cat), 1)
-# RR < 130/80mmHg
-# RR < 140/90mmHg
+  summarise_at(vars(BL_ku_ruhepuls, BL_ku_sys, BL_ku_dia, BL_ku_map), list(~ round(sd(., na.rm=TRUE),1)))
+table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_sys < 130 & GCKD_df1_fem$BL_ku_dia < 80,  useNA = "always")
+prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_sys < 130 & GCKD_df1_fem$BL_ku_dia < 80), 1)
+table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_sys < 140 & GCKD_df1_fem$BL_ku_dia < 90,  useNA = "always")
+prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_sys < 140 & GCKD_df1_fem$BL_ku_dia < 90), 1)
 GCKD_df1_fem %>% group_by(diabetes) %>%
   summarise_at(vars(BL_creavalue, BL_cysvalue, BL_gfr_mdrd), list(~ round(mean(., na.rm=TRUE),1)))
 GCKD_df1_fem %>% group_by(diabetes) %>%
   summarise_at(vars(BL_creavalue, BL_cysvalue, BL_gfr_mdrd), list(~ round(sd(., na.rm=TRUE),1)))
+table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_gfr_mdrd >= 60,  useNA = "always")
+prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_gfr_mdrd >= 60), 1)
+table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_gfr_mdrd >= 45 & GCKD_df1_fem$BL_gfr_mdrd < 60,  useNA = "always")
+prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_gfr_mdrd >= 45 & GCKD_df1_fem$BL_gfr_mdrd < 60), 1)
+table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_gfr_mdrd >= 30 & GCKD_df1_fem$BL_gfr_mdrd < 45,  useNA = "always")
+prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_gfr_mdrd >= 30 & GCKD_df1_fem$BL_gfr_mdrd < 45), 1)
+table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_gfr_mdrd < 30,  useNA = "always")
+prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_gfr_mdrd < 30), 1)
 GCKD_df1_fem %>% group_by(diabetes) %>%
   summarise_at(vars(BL_uacr), list(~ round(median(., na.rm=TRUE), 1)))
 GCKD_df1_fem %>% group_by(diabetes) %>%
   summarise_at(vars(BL_uacr), list(~ round(quantile(., na.rm=TRUE), 1)))
-table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_gfr_mdrd_cat, useNA = "always")
-prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_gfr_mdrd_cat), 1)
-table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_uacr_cat, useNA = "always")
-prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_uacr_cat), 1)
+table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_uacr < 30,  useNA = "always")
+prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_uacr < 30), 1)
+table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_uacr >= 30 & GCKD_df1_fem$BL_uacr <= 300,  useNA = "always")
+prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_uacr >= 30 & GCKD_df1_fem$BL_uacr <= 300), 1)
+table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_uacr > 300,  useNA = "always")
+prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_uacr > 300), 1)
 table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_med_raas_ace, useNA = "always")
 prop.table(table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_med_raas_ace), 1)
 table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_med_raas_at1, useNA = "always")
@@ -300,25 +368,35 @@ prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$smoking), 1)
 table(GCKD_df1_male$diabetes, GCKD_df1_male$hospital, useNA = "always")
 prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$hospital), 1)
 GCKD_df1_male %>% group_by(diabetes) %>%
-  summarise_at(vars(BL_ku_ruhepuls, BL_ku_dia, BL_ku_sys, BL_ku_map), list(~ round(mean(., na.rm=TRUE),1)))
+  summarise_at(vars(BL_ku_ruhepuls, BL_ku_sys, BL_ku_dia, BL_ku_map), list(~ round(mean(., na.rm=TRUE),1)))
 GCKD_df1_male %>% group_by(diabetes) %>%
-  summarise_at(vars(BL_ku_ruhepuls, BL_ku_dia, BL_ku_sys, BL_ku_map), list(~ round(sd(., na.rm=TRUE),1)))
-table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_bmi_cat, useNA = "always")
-prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_bmi_cat), 1)
-# RR < 130/80mmHg
-# RR < 140/90mmHg
+  summarise_at(vars(BL_ku_ruhepuls, BL_ku_sys, BL_ku_dia, BL_ku_map), list(~ round(sd(., na.rm=TRUE),1)))
+table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_sys < 130 & GCKD_df1_male$BL_ku_dia < 80,  useNA = "always")
+prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_sys < 130 & GCKD_df1_male$BL_ku_dia < 80), 1)
+table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_sys < 140 & GCKD_df1_male$BL_ku_dia < 90,  useNA = "always")
+prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_sys < 140 & GCKD_df1_male$BL_ku_dia < 90), 1)
 GCKD_df1_male %>% group_by(diabetes) %>%
   summarise_at(vars(BL_creavalue, BL_cysvalue, BL_gfr_mdrd), list(~ round(mean(., na.rm=TRUE),1)))
 GCKD_df1_male %>% group_by(diabetes) %>%
   summarise_at(vars(BL_creavalue, BL_cysvalue, BL_gfr_mdrd), list(~ round(sd(., na.rm=TRUE),1)))
+table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_gfr_mdrd >= 60,  useNA = "always")
+prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_gfr_mdrd >= 60), 1)
+table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_gfr_mdrd >= 45 & GCKD_df1_male$BL_gfr_mdrd < 60,  useNA = "always")
+prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_gfr_mdrd >= 45 & GCKD_df1_male$BL_gfr_mdrd < 60), 1)
+table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_gfr_mdrd >= 30 & GCKD_df1_male$BL_gfr_mdrd < 45,  useNA = "always")
+prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_gfr_mdrd >= 30 & GCKD_df1_male$BL_gfr_mdrd < 45), 1)
+table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_gfr_mdrd < 30,  useNA = "always")
+prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_gfr_mdrd < 30), 1)
 GCKD_df1_male %>% group_by(diabetes) %>%
   summarise_at(vars(BL_uacr), list(~ round(median(., na.rm=TRUE), 1)))
 GCKD_df1_male %>% group_by(diabetes) %>%
   summarise_at(vars(BL_uacr), list(~ round(quantile(., na.rm=TRUE), 1)))
-table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_gfr_mdrd_cat, useNA = "always")
-prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_gfr_mdrd_cat), 1)
-table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_uacr_cat, useNA = "always")
-prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_uacr_cat), 1)
+table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_uacr < 30,  useNA = "always")
+prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_uacr < 30), 1)
+table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_uacr >= 30 & GCKD_df1_male$BL_uacr <= 300,  useNA = "always")
+prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_uacr >= 30 & GCKD_df1_male$BL_uacr <= 300), 1)
+table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_uacr > 300,  useNA = "always")
+prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_uacr > 300), 1)
 table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_med_raas_ace, useNA = "always")
 prop.table(table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_med_raas_ace), 1)
 table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_med_raas_at1, useNA = "always")

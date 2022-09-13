@@ -1,9 +1,8 @@
 # Packages 
 pacman::p_load(tidyr, stringr, dplyr, openxlsx, naniar, emmeans, multcomp, 
-               plyr, finalfit, ggplot2, tibble, lmtest, sandwich,
-               tidyverse, tidyselect, summarytools, scales, gridExtra, 
+               plyr, finalfit, ggplot2, tibble, MatchIt, optmatch, lmtest, sandwich,
+               mice, tidyverse, tidyselect, summarytools, scales, gridExtra, 
                lubridate, eeptools, kidney.epi, nephro)
-
 # Datensatz
 setwd("Z:/GCKD/")
 Titze <- as_tibble(read.xlsx("GCKD_df.xlsx", sep = ";"))
@@ -42,7 +41,7 @@ Titze$BL_ku_gr_pat_cm <- as.numeric(Titze$BL_ku_gr_pat)
 Titze <- Titze %>% mutate(BL_ku_height_cm = ifelse(is.na(Titze$BL_ku_groesse_cm) == TRUE, BL_ku_gr_pat_cm, BL_ku_groesse_cm))
 Titze <- Titze %>% mutate(BL_ku_weight = ifelse(is.na(Titze$BL_ku_gewicht) == TRUE, BL_ku_gew_pat, BL_ku_gewicht))
 Titze$BL_ku_bmi <- as.numeric(Titze$BL_bmi_korr)
-Titze <- Titze %>% mutate(BL_ku_bmi_cat = ifelse(BL_ku_bmi <= 25, 1, ifelse(BL_ku_bmi > 25 & BL_ku_bmi <= 30, 2, 3)))
+#Titze <- Titze %>% mutate(BL_ku_bmi_cat = ifelse(BL_ku_bmi <= 25, 1, ifelse(BL_ku_bmi > 25 & BL_ku_bmi <= 30, 2, 3)))
 ## Blutdruck
 Titze$BL_ku_sys <- as.numeric((Titze$BL_ku_mess1_sys_1 + Titze$BL_ku_mess2_sys_1 + Titze$BL_ku_mess3_sys)/3)
 Titze$BL_ku_dia <- as.numeric((Titze$BL_ku_mess1_dia_1 + Titze$BL_ku_mess2_dia_1 + Titze$BL_ku_mess3_dia)/3)
@@ -56,22 +55,22 @@ Titze$dem_ethn = 0
 ### Berechnung mit package nephro (package kidney.epi: falsche Berechnung)
 #### MRDR (4-Variablen-Formel)
 Titze$BL_gfr_mdrd <- MDRD4(creatinine = Titze$BL_creavalue, age = Titze$BL_age, sex = Titze$dem_sex_2, ethnicity = Titze$dem_ethn)
-Titze <- Titze %>% mutate(BL_gfr_mdrd_cat = ifelse(BL_gfr_mdrd >= 90, "G1", ifelse(BL_gfr_mdrd >= 60 & BL_gfr_mdrd < 90, "G2", ifelse(BL_gfr_mdrd >= 45 & BL_gfr_mdrd < 60, "G3a", ifelse(BL_gfr_mdrd >= 30 & BL_gfr_mdrd < 45, "G3b", ifelse(BL_gfr_mdrd >= 15 & BL_gfr_mdrd < 30, "G4", "G5"))))))
+#Titze <- Titze %>% mutate(BL_gfr_mdrd_cat = ifelse(BL_gfr_mdrd >= 90, "G1", ifelse(BL_gfr_mdrd >= 60 & BL_gfr_mdrd < 90, "G2", ifelse(BL_gfr_mdrd >= 45 & BL_gfr_mdrd < 60, "G3a", ifelse(BL_gfr_mdrd >= 30 & BL_gfr_mdrd < 45, "G3b", ifelse(BL_gfr_mdrd >= 15 & BL_gfr_mdrd < 30, "G4", "G5"))))))
 #### CKD-EPI Krea
 Titze$BL_gfr_ckdepi <- CKDEpi.creat(creatinine = Titze$BL_creavalue, age = Titze$BL_age, sex = Titze$dem_sex_2, ethnicity = Titze$dem_ethn)
-Titze <- Titze %>% mutate(BL_gfr_ckdepi_cat = ifelse(BL_gfr_ckdepi >= 90, "G1", ifelse(BL_gfr_ckdepi >= 60 & BL_gfr_ckdepi < 90, "G2", ifelse(BL_gfr_ckdepi >= 45 & BL_gfr_ckdepi < 60, "G3a", ifelse(BL_gfr_ckdepi >= 30 & BL_gfr_ckdepi < 45, "G3b", ifelse(BL_gfr_ckdepi >= 15 & BL_gfr_ckdepi < 30, "G4", "G5"))))))
+#Titze <- Titze %>% mutate(BL_gfr_ckdepi_cat = ifelse(BL_gfr_ckdepi >= 90, "G1", ifelse(BL_gfr_ckdepi >= 60 & BL_gfr_ckdepi < 90, "G2", ifelse(BL_gfr_ckdepi >= 45 & BL_gfr_ckdepi < 60, "G3a", ifelse(BL_gfr_ckdepi >= 30 & BL_gfr_ckdepi < 45, "G3b", ifelse(BL_gfr_ckdepi >= 15 & BL_gfr_ckdepi < 30, "G4", "G5"))))))
 #### CKD-EPI Cys
 Titze$BL_gfr_ckdepi_cys <- CKDEpi.cys(cystatin = Titze$BL_cysvalue, age = Titze$BL_age, sex = Titze$dem_sex_2)
-Titze <- Titze %>% mutate(BL_gfr_ckdepi_cys_cat = ifelse(BL_gfr_ckdepi_cys >= 90, "G1", ifelse(BL_gfr_ckdepi_cys >= 60 & BL_gfr_ckdepi_cys < 90, "G2", ifelse(BL_gfr_ckdepi_cys >= 45 & BL_gfr_ckdepi_cys < 60, "G3a", ifelse(BL_gfr_ckdepi_cys >= 30 & BL_gfr_ckdepi_cys < 45, "G3b", ifelse(BL_gfr_ckdepi_cys >= 15 & BL_gfr_ckdepi_cys < 30, "G4", "G5"))))))
+#Titze <- Titze %>% mutate(BL_gfr_ckdepi_cys_cat = ifelse(BL_gfr_ckdepi_cys >= 90, "G1", ifelse(BL_gfr_ckdepi_cys >= 60 & BL_gfr_ckdepi_cys < 90, "G2", ifelse(BL_gfr_ckdepi_cys >= 45 & BL_gfr_ckdepi_cys < 60, "G3a", ifelse(BL_gfr_ckdepi_cys >= 30 & BL_gfr_ckdepi_cys < 45, "G3b", ifelse(BL_gfr_ckdepi_cys >= 15 & BL_gfr_ckdepi_cys < 30, "G4", "G5"))))))
 #### CKD-EPI Cys-Crea
 Titze$BL_gfr_ckdepi_creacys <- CKDEpi.creat.cys(creatinine = Titze$BL_creavalue, cystatin = Titze$BL_cysvalue, age = Titze$BL_age, sex = Titze$dem_sex_2, ethnicity = Titze$dem_ethn)
-Titze <- Titze %>% mutate(BL_gfr_ckdepi_creacys_cat = ifelse(BL_gfr_ckdepi_creacys >= 90, "G1", ifelse(BL_gfr_ckdepi_creacys >= 60 & BL_gfr_ckdepi_creacys < 90, "G2", ifelse(BL_gfr_ckdepi_creacys >= 45 & BL_gfr_ckdepi_creacys < 60, "G3a", ifelse(BL_gfr_ckdepi_creacys >= 30 & BL_gfr_ckdepi_creacys < 45, "G3b", ifelse(BL_gfr_ckdepi_creacys >= 15 & BL_gfr_ckdepi_creacys < 30, "G4", "G5"))))))
+#Titze <- Titze %>% mutate(BL_gfr_ckdepi_creacys_cat = ifelse(BL_gfr_ckdepi_creacys >= 90, "G1", ifelse(BL_gfr_ckdepi_creacys >= 60 & BL_gfr_ckdepi_creacys < 90, "G2", ifelse(BL_gfr_ckdepi_creacys >= 45 & BL_gfr_ckdepi_creacys < 60, "G3a", ifelse(BL_gfr_ckdepi_creacys >= 30 & BL_gfr_ckdepi_creacys < 45, "G3b", ifelse(BL_gfr_ckdepi_creacys >= 15 & BL_gfr_ckdepi_creacys < 30, "G4", "G5"))))))
 ## Urin Alb/Kreatinin > mg/gKrea: Urin Albumin > mg/l, Urin Kreatinin mg/dl > Umwandlung in g/l
 Titze$BL_ucreavalue <- as.numeric(Titze$BL_ucreavalue)
 Titze$BL_ualbuvalue <- as.numeric(Titze$BL_ualbuvalue)
 Titze$BL_ucreavalue_gl <- as.numeric(Titze$BL_ucreavalue/100)
 Titze$BL_uacr <- as.numeric(Titze$BL_ualbuvalue/Titze$BL_ucreavalue_gl)
-Titze <- Titze %>% mutate(BL_uacr_cat = ifelse(BL_uacr < 30, "A1", ifelse(BL_uacr >= 30 & BL_uacr <= 300, "A2", "A3")))
+#Titze <- Titze %>% mutate(BL_uacr_cat = ifelse(BL_uacr < 30, "A1", ifelse(BL_uacr >= 30 & BL_uacr <= 300, "A2", "A3")))
 ## Medikation: Aggregierte Variable durch Data Management med_
 Titze <- Titze %>% mutate(BL_med_antihypert = ifelse(Titze$BL_med_bp == 1, 1, ifelse(Titze$BL_med_bp == 0, 2, 9999)))
 Titze <- Titze %>% mutate(BL_med_raas_ace = ifelse(Titze$BL_med_bp_ace == 1, 1, ifelse(Titze$BL_med_bp_ace == 0, 2, 9999)))
@@ -151,22 +150,22 @@ Titze <- Titze %>% na_if("9999")
 
 # Preprocessed Dataset
 Titze_var <- c("BL_age", "dem_sex", "aa_stroke", "aa_myocard", "aa_hypertens", "aa_diabetes", "aa_renal", "aa_renal_stones", "aa_dialyse", 
-               "aa_ntx", "smoking", "hospital", "BL_ku_height_cm", "BL_ku_weight", "BL_ku_bmi", "BL_ku_bmi_cat", "BL_ku_sys", "BL_ku_dia", "BL_ku_map", "BL_ku_ruhepuls",
-               "BL_creavalue", "BL_cysvalue", "BL_gfr_mdrd", "BL_gfr_mdrd_cat", "BL_gfr_ckdepi", "BL_gfr_ckdepi_cat", "BL_gfr_ckdepi_cys", "BL_gfr_ckdepi_cys_cat", 
-               "BL_gfr_ckdepi_creacys", "BL_gfr_ckdepi_creacys_cat", "BL_uacr", "BL_uacr_cat", "BL_med_raas_ace", "BL_med_raas_at1", "BL_med_raas_single", "BL_med_raas_double", 
-               "BL_med_caanta", "BL_med_bblocker", "BL_med_diuretic", "BL_med_diuretic_loop", "BL_med_diuretic_thiazid", "BL_med_diuretic_aldost", "biopsy", "ckd_diab",
-               "ckd_vasc", "ckd_syst", "ckd_glom_prim", "ckd_interst", "ckd_heredit", "ckd_aki", "ckd_single", "ckd_obstr", "ckd_oth", "ckd_uk", "ckd_lead", "diabetes", "hypertension",
+               "aa_ntx", "smoking", "hospital", "BL_ku_height_cm", "BL_ku_weight", "BL_ku_bmi", "BL_ku_sys", "BL_ku_dia", "BL_ku_map", "BL_ku_ruhepuls",
+               "BL_creavalue", "BL_cysvalue", "BL_gfr_mdrd", "BL_gfr_ckdepi", "BL_gfr_ckdepi_cys", "BL_gfr_ckdepi_creacys", "BL_uacr", "BL_med_raas_ace", 
+               "BL_med_raas_at1", "BL_med_raas_single", "BL_med_raas_double", "BL_med_caanta", "BL_med_bblocker", "BL_med_diuretic", "BL_med_diuretic_loop", 
+               "BL_med_diuretic_thiazid", "BL_med_diuretic_aldost", "biopsy", "ckd_diab", "ckd_vasc", "ckd_syst", "ckd_glom_prim", "ckd_interst", 
+               "ckd_heredit", "ckd_aki", "ckd_single", "ckd_obstr", "ckd_oth", "ckd_uk", "ckd_lead", "diabetes", "hypertension",
                "valve", "coronary", "myocard", "bypass", "ptca", "cerebrovasc", "stroke", "carotic_surg", "carotic_interv", "pavk", "amput", "ygraft", "pta", "cardiovasc", 
                "pavk_surgery", "awareness", "treatment", "incl_egfr", "education")
 GCKD_df1 <- Titze[,Titze_var]
 Titze_var_QIred <- c("BL_age", "dem_sex", "aa_stroke", "aa_myocard", "aa_hypertens", "aa_diabetes", "aa_renal", "aa_renal_stones", "aa_dialyse", 
-               "aa_ntx", "smoking", "hospital", "BL_ku_bmi", "BL_ku_bmi_cat", "BL_ku_sys", "BL_ku_dia", "BL_ku_map", "BL_ku_ruhepuls",
-               "BL_creavalue", "BL_cysvalue", "BL_gfr_mdrd", "BL_gfr_mdrd_cat", "BL_gfr_ckdepi", "BL_gfr_ckdepi_cat", "BL_gfr_ckdepi_cys", "BL_gfr_ckdepi_cys_cat", 
-               "BL_gfr_ckdepi_creacys", "BL_gfr_ckdepi_creacys_cat", "BL_uacr", "BL_uacr_cat", "BL_med_raas_ace", "BL_med_raas_at1", "BL_med_raas_single", "BL_med_raas_double", 
-               "BL_med_caanta", "BL_med_bblocker", "BL_med_diuretic", "BL_med_diuretic_loop", "BL_med_diuretic_thiazid", "BL_med_diuretic_aldost", "biopsy", "ckd_diab",
-               "ckd_vasc", "ckd_syst", "ckd_glom_prim", "ckd_interst", "ckd_heredit", "ckd_aki", "ckd_single", "ckd_obstr", "ckd_oth", "ckd_uk", "ckd_lead", "diabetes", "hypertension",
-               "valve", "coronary", "myocard", "bypass", "ptca", "cerebrovasc", "stroke", "carotic_surg", "carotic_interv", "pavk", "amput", "ygraft", "pta", "cardiovasc", 
-               "pavk_surgery", "awareness", "treatment", "incl_egfr", "education")
+                     "aa_ntx", "smoking", "hospital", "BL_ku_bmi", "BL_ku_sys", "BL_ku_dia", "BL_ku_map", "BL_ku_ruhepuls",
+                     "BL_creavalue", "BL_cysvalue", "BL_gfr_mdrd", "BL_gfr_ckdepi", "BL_gfr_ckdepi_cys", "BL_gfr_ckdepi_creacys", "BL_uacr", "BL_med_raas_ace", 
+                     "BL_med_raas_at1", "BL_med_raas_single", "BL_med_raas_double", "BL_med_caanta", "BL_med_bblocker", "BL_med_diuretic", "BL_med_diuretic_loop", 
+                     "BL_med_diuretic_thiazid", "BL_med_diuretic_aldost", "biopsy", "ckd_diab", "ckd_vasc", "ckd_syst", "ckd_glom_prim", "ckd_interst", 
+                     "ckd_heredit", "ckd_aki", "ckd_single", "ckd_obstr", "ckd_oth", "ckd_uk", "ckd_lead", "diabetes", "hypertension",
+                     "valve", "coronary", "myocard", "bypass", "ptca", "cerebrovasc", "stroke", "carotic_surg", "carotic_interv", "pavk", "amput", "ygraft", "pta", "cardiovasc", 
+                     "pavk_surgery", "awareness", "treatment", "incl_egfr", "education")
 GCKD_df1_QIred <- Titze[,Titze_var_QIred]
 
 setwd("Z:/GCKD/")
