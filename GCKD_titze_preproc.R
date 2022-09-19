@@ -128,9 +128,9 @@ Titze <- Titze %>% mutate(carotic_interv = ifelse(Titze$aa_carot_ball == 1, 1, i
 ### pAVK: PTA | Y-Prothese | operativ Revask | Amputation
 Titze <- Titze %>% mutate(pavk = ifelse(Titze$aa_durchbl_bein == 2 & Titze$aa_kontrastm == 2 & Titze$aa_amputat == 2, 2, ifelse(Titze$aa_kontrastm == 1 | Titze$aa_durchbl_bein == 1 | Titze$aa_yprothese == 1 | Titze$aa_amputat == 1, 1, 9999)))
 Titze <- Titze %>% mutate(amput = ifelse(Titze$aa_amputat == 1, 1, ifelse(Titze$aa_amputat == 2, 2, 9999)))
-Titze <- Titze %>% mutate(ygraft = ifelse(Titze$aa_yprothese == 1, 1, ifelse(Titze$aa_yprothese == 2 | Titze$aa_durchbl_bein == 2, 2, 9999)))
+Titze <- Titze %>% mutate(ygraft = ifelse(Titze$aa_yprothese == 2 | Titze$aa_durchbl_bein == 2, 2, ifelse(Titze$aa_yprothese == 1, 1, 9999)))
 Titze <- Titze %>% mutate(pta = ifelse(Titze$aa_kontrastm == 1, 1, ifelse(Titze$aa_kontrastm == 2, 2, 9999)))
-Titze <- Titze %>% mutate(pavk_surgery = ifelse(Titze$aa_bein_op == 1, 1, ifelse(Titze$aa_bein_op == 2 | Titze$aa_durchbl_bein == 2, 2, 9999)))
+Titze <- Titze %>% mutate(pavk_surgery = ifelse(Titze$aa_bein_op == 2 | Titze$aa_durchbl_bein == 2, 2, ifelse(Titze$aa_bein_op == 1, 1, 9999)))
 ### gesamt kardiovaskulär: Herklappe | Aneurysma | KHK | zerebrovask | pAVK
 Titze <- Titze %>% mutate(cardiovasc = ifelse(Titze$valve == 1 | Titze$aa_aneurysma == 1 | Titze$coronary == 1 | Titze$cerebrovasc == 1 | Titze$pavk == 1, 1, ifelse(Titze$valve == 2 & Titze$aa_aneurysma == 2 & Titze$coronary == 2 & Titze$cerebrovasc == 2 & Titze$pavk== 2, 2, 9999)))
 ## Behandlungsdauer & Awareness: na_erst_info, ar_nephr_beh
