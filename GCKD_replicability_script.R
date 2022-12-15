@@ -6,33 +6,19 @@ pacman::p_load(tidyr, stringr, dplyr, openxlsx, naniar, emmeans, multcomp,
                patchwork, rms, coxed, DescTools, PropCIs)
 
 # Dataset
-path_data = "D:/BackUp GCKD"
-path_results = "C:/Users/User/OneDrive/Documents/PRIVAT/Charite/Forschung/Projekt Computerbasierte Anonymisierung/Titzeetal/Ergebnisse"
-setwd(path_results)
+path_tbl = "C:/Users/User/OneDrive/Documents/PRIVAT/Charite/Forschung/Projekt Computerbasierte Anonymisierung/Titzeetal/Ergebnisse/Tbl_perc_CI"
+setwd(path_tbl)
 
-# similarity of results: replicability
-## Defining function for weather estimates are within the confidence interval obtained from original data
-estimate_CI <- function(Lor, Uor, Ean){
-  if(is.na(Lor) == TRUE | is.na(Uor) == TRUE | is.na(Ean) == TRUE){
-    return(NA)
-  }
-  else if(Ean >= Lor & Ean <= Uor){
-    return(TRUE)
-  }
-  else{
-    return(FALSE)
-  }
-}
 ## Defining function for overlap in the interval lengths 
 ### based on Karr et al
 CI_overlap <- function(Lor, Uor, Lan, Uan){
-  if(is.na(Uor) == TRUE | is.na(Uan) == TRUE | is.na(Lor) == TRUE | CIis.na(Lan) == TRUE){
+  if(is.na(Uor) == TRUE | is.na(Uan) == TRUE | is.na(Lor) == TRUE | is.na(Lan) == TRUE){
     CIo <- NA
   }
   else if(Uor <= Uan & Lor >= Lan){
     CIo <- 0.5*((Uor-Lor)/(Uor-Lor)+(Uor-Lor)/(Uan-Lan))
   }
-  else if(Uan <= Uor & Lan >= Lor){CI
+  else if(Uan <= Uor & Lan >= Lor){
     CIo <- 0.5*((Uan-Lan)/(Uor-Lor)+(Uan-Lan)/(Uan-Lan))
   }
   else if(Uan <= Uor & Lor >= Lan){
@@ -46,23 +32,21 @@ CI_overlap <- function(Lor, Uor, Lan, Uan){
   print(CIo)
 }
 
-### Package HTSSIP perc_overlap >> only percentage of coverage of original 95% CI
-
-# Comparing table 1
-tbl1_origin <- as_tibble(read.xlsx("GCKD_results_tbl1_origin.xlsx", sep = ";"))
-tbl1_total_origin <- as_tibble(read.xlsx("tbl1_total_origin.xlsx"))
-tbl1_total_origin <- subset(tbl1_total_origin, !(endsWith(tbl1_total_origin$Variable, "_no")) & 
-                              tbl1_total_origin$Variable != "(Missing)" & !is.na(tbl1_total_origin$n_mean_total))
-
-tbl1_total_kanonymity_generic_11 <- as_tibble(read.xlsx("tbl1_total_kanonymity_generic_11"))
-
-
-tbl1_anonym_2 <- as_tibble(read.xlsx("GCKD_results_tbl1_generic_k11k2.xlsx", sep = ";"))
-tbl1_anonym_3 <- as_tibble(read.xlsx("GCKD_results_tbl1_specific_k11.xlsx", sep = ";"))
-tbl1_anonym_4 <- as_tibble(read.xlsx("GCKD_results_tbl1_specific_k11k2.xlsx", sep = ";"))
-
 # Tbl 1
-# Preprocessing
+## Datasets
+tbl1_origin <- as_tibble(read.xlsx("tbl1_origin.xlsx"))
+tbl1_origin <- subset(tbl1_origin,  
+                      tbl1_origin$Variable != "BL_age" &
+                        tbl1_origin$Variable != "BL_ku_height_cm" &
+                        tbl1_origin$Variable != "BL_ku_weight" &
+                        tbl1_origin$Variable != "BL_ku_bmi"&
+                        tbl1_origin$Variable != ">30"&
+                        tbl1_origin$Variable != "25.1-29.9"&
+                        tbl1_origin$Variable != "<=25"&
+                        tbl1_origin$Variable != "Male")
+tbl1_anonym <- as_tibble(read.xlsx("tbl1_kanonymity_generic_11.xlsx"))
+tbl1_anonym <- subset(tbl1_anonym,  
+                      tbl1_anonym$Variable != "Male")
 ## Separating 95% CI bounds
 tbl1_origin[c("CI_total_low", "CI_total_up")] <- str_split_fixed(tbl1_origin$CI_total, "-", 2)
 tbl1_origin$CI_total_low <- as.numeric(tbl1_origin$CI_total_low)
@@ -94,57 +78,16 @@ tbl1_origin$CI_female_nd_up <- as.numeric(tbl1_origin$CI_female_nd_up)
 tbl1_anonym[c("CI_female_nd_low", "CI_female_nd_up")] <- str_split_fixed(tbl1_anonym$CI_female_nd, "-", 2)
 tbl1_anonym$CI_female_nd_low <- as.numeric(tbl1_anonym$CI_female_nd_low)
 tbl1_anonym$CI_female_nd_up <- as.numeric(tbl1_anonym$CI_female_nd_up)
-tbl1_anonym_2[c("CI_female_nd_low", "CI_female_nd_up")] <- str_split_fixed(tbl1_anonym_2$CI_female_nd, "-", 2)
-tbl1_anonym_2$CI_female_nd_low <- as.numeric(tbl1_anonym_2$CI_female_nd_low)
-tbl1_anonym_2$CI_female_nd_up <- as.numeric(tbl1_anonym_2$CI_female_nd_up)
-tbl1_anonym_3[c("CI_female_nd_low", "CI_female_nd_up")] <- str_split_fixed(tbl1_anonym_3$CI_female_nd, "-", 2)
-tbl1_anonym_3$CI_female_nd_low <- as.numeric(tbl1_anonym_3$CI_female_nd_low)
-tbl1_anonym_3$CI_female_nd_up <- as.numeric(tbl1_anonym_3$CI_female_nd_up)
-tbl1_anonym_4[c("CI_female_nd_low", "CI_female_nd_up")] <- str_split_fixed(tbl1_anonym_4$CI_female_nd, "-", 2)
-tbl1_anonym_4$CI_female_nd_low <- as.numeric(tbl1_anonym_4$CI_female_nd_low)
-tbl1_anonym_4$CI_female_nd_up <- as.numeric(tbl1_anonym_4$CI_female_nd_up)
 ## Rounding 1 decimal
 tbl1_origin <- tbl1_origin %>% mutate(across(where(is.numeric), ~round(., 1)))
 tbl1_anonym <- tbl1_anonym %>% mutate(across(where(is.numeric), ~round(., 1)))
-tbl1_anonym_2 <- tbl1_anonym_2 %>% mutate(across(where(is.numeric), ~round(., 1)))
-tbl1_anonym_3 <- tbl1_anonym_3 %>% mutate(across(where(is.numeric), ~round(., 1)))
-tbl1_anonym_4 <- tbl1_anonym_4 %>% mutate(across(where(is.numeric), ~round(., 1)))
-# Calculations
-## estimate within 95% CI
-tbl1_est <- data.frame(NA_col = rep(NA, 52))
-res_male_d = numeric(52)
-res_male_nd = numeric(52)
-res_female_d = numeric(52)
-res_female_nd = numeric(52)
-res = numeric(52)
-for(i in 1:nrow((tbl1_anonym))) {
-  var = tbl1_origin$Variable[i]
-  res_male_d[i] <- estimate_CI(tbl1_origin$CI_male_d_low[i], tbl1_origin$CI_male_d_up[i], tbl1_anonym$perc_male_d[i])
-  tbl1_est[, 1] <- res_male_d
-  res_male_nd[i] <- estimate_CI(tbl1_origin$CI_male_nd_low[i], tbl1_origin$CI_male_nd_up[i], tbl1_anonym$perc_male_nd[i])
-  tbl1_est[, 2] <- res_male_nd
-  res_female_d[i] <- estimate_CI(tbl1_origin$CI_female_d_low[i], tbl1_origin$CI_female_d_up[i], tbl1_anonym$perc_female_d[i])
-  tbl1_est[, 3] <- res_female_d
-  res_female_nd[i] <- estimate_CI(tbl1_origin$CI_female_nd_low[i], tbl1_origin$CI_female_nd_up[i], tbl1_anonym$perc_female_nd[i])
-  tbl1_est[, 4] <- res_female_nd
-  res[i] <- estimate_CI(tbl1_origin$CI_total_low[i], tbl1_origin$CI_total_up[i], tbl1_anonym$perc_total[i]) 
-  tbl1_est[, 5] <- res
-  rownames(tbl1_est)[i] <- paste0(var)
-  colnames(tbl1_est)[1] <- paste0("Estimate_male_d")
-  colnames(tbl1_est)[2] <- paste0("Estimate_male_nd")
-  colnames(tbl1_est)[3] <- paste0("Estimate_female_d")
-  colnames(tbl1_est)[4] <- paste0("Estimate_female_nd")
-  colnames(tbl1_est)[5] <- paste0("Estimate_total")
-}
-tbl1_est$Variable <- row.names(tbl1_est)
-write.xlsx(tbl1_est, "GCKD_results_est_tbl1_specific_k11.xlsx")
-## overlapping 95% CI
-tbl1_ci <- data.frame(NA_col = rep(NA, 52))
-res_ci_male_d = numeric(52)
-res_ci_male_nd = numeric(52)
-res_ci_female_d = numeric(52)
-res_ci_female_nd = numeric(52)
-res_ci = numeric(52)
+## Overlapping 95% CI
+tbl1_ci <- data.frame(NA_col = rep(NA, 40))
+res_ci_male_d = numeric(40)
+res_ci_male_nd = numeric(40)
+res_ci_female_d = numeric(40)
+res_ci_female_nd = numeric(40)
+res_ci = numeric(40)
 for(i in 1:nrow((tbl1_anonym))) {
   var = tbl1_origin$Variable[i]
   res_ci_male_d[i] <- CI_overlap(tbl1_origin$CI_male_d_low[i], tbl1_origin$CI_male_d_up[i], tbl1_anonym$CI_male_d_low[i], tbl1_anonym$CI_male_d_up[i])
@@ -164,155 +107,23 @@ for(i in 1:nrow((tbl1_anonym))) {
   colnames(tbl1_ci)[4] <- paste0("CI_overlap_female_nd")
   colnames(tbl1_ci)[5] <- paste0("CI_overlap_total")
 }
+
 tbl1_ci$Variable <- row.names(tbl1_ci)
-write.xlsx(tbl1_ci, "GCKD_results_ci_tbl1_specific_k11.xlsx")
-## Graphical illustration only categorical variables for subset non diabetic females
-tbl1_origin_cat <- tbl1_origin %>% subset(Variable != "BL_ku_sys" & Variable != "BL_ku_dia" & Variable != "BL_ku_map" & 
-                                            Variable != "BL_ku_ruhepuls" & Variable != "BL_creavalue" & 
-                                            Variable != "BL_cysvalue" & Variable != "BL_gfr_mdrd" & Variable != "male")
-tbl1_origin_cat <- subset(tbl1_origin_cat, !(endsWith(Variable, '_no')))
-tbl1_origin_cat$Variable <- factor(tbl1_origin_cat$Variable, levels = c("biopsy_yes", "BL_med_bblocker_yes", 
-                                                                              "BL_med_caanta_yes", "BL_med_diuretic_loop_yes",
-                                                                              "BL_med_diuretic_aldost_yes","BL_med_diuretic_thiazid_yes", 
-                                                                              "BL_med_diuretic_yes", "BL_med_raas_single_yes", 
-                                                                              "BL_med_raas_double_yes", "BL_med_raas_at1_yes", 
-                                                                              "BL_med_raas_ace_yes", "hospital_yes", "smoking_never", 
-                                                                              "smoking_former", "smoking_current", "aa_ntx_yes", 
-                                                                              "aa_dialyse_yes", "aa_renal_stones_yes", "aa_renal_yes",
-                                                                              "aa_diabetes_yes", "aa_hypertens_yes", "aa_myocard_yes", 
-                                                                              "aa_stroke_yes", "female"))  
-tbl1_origin_low <- tbl1_origin_cat[,c("CI_female_nd_low", "Variable")]
-tbl1_origin_low$bound = "low"
-names(tbl1_origin_low)[names(tbl1_origin_low) == "CI_female_nd_low"] <- "CI_bound_female_nd"
-tbl1_origin_up <- tbl1_origin_cat[,c("CI_female_nd_up", "Variable")]
-tbl1_origin_up$bound = "up"
-names(tbl1_origin_up)[names(tbl1_origin_up) == "CI_female_nd_up"] <- "CI_bound_female_nd"
-tbl1_origin_female_nd <- rbind(tbl1_origin_low, tbl1_origin_up)
-tbl1_anonym_cat <- tbl1_anonym %>% subset(Variable != "BL_ku_sys" & Variable != "BL_ku_dia" & Variable != "BL_ku_map" & 
-                                            Variable != "BL_ku_ruhepuls" & Variable != "BL_creavalue" & 
-                                            Variable != "BL_cysvalue" & Variable != "BL_gfr_mdrd" & Variable != "male")
-tbl1_anonym_cat <- subset(tbl1_anonym_cat, !(endsWith(Variable, '_no')))
-tbl1_anonym_cat$Variable <- factor(tbl1_anonym_cat$Variable, levels = c("biopsy_yes", "BL_med_bblocker_yes", 
-                                                                              "BL_med_caanta_yes", "BL_med_diuretic_loop_yes",
-                                                                              "BL_med_diuretic_aldost_yes","BL_med_diuretic_thiazid_yes", 
-                                                                              "BL_med_diuretic_yes", "BL_med_raas_single_yes", 
-                                                                              "BL_med_raas_double_yes", "BL_med_raas_at1_yes", 
-                                                                              "BL_med_raas_ace_yes", "hospital_yes", "smoking_never", 
-                                                                              "smoking_former", "smoking_current", "aa_ntx_yes", 
-                                                                              "aa_dialyse_yes", "aa_renal_stones_yes", "aa_renal_yes",
-                                                                              "aa_diabetes_yes", "aa_hypertens_yes", "aa_myocard_yes", 
-                                                                              "aa_stroke_yes", "female")) 
-tbl1_anonym_low <- tbl1_anonym_cat[,c("CI_female_nd_low", "Variable")]
-tbl1_anonym_low$bound = "low"
-names(tbl1_anonym_low)[names(tbl1_anonym_low) == "CI_female_nd_low"] <- "CI_bound_female_nd"
-tbl1_anonym_up <- tbl1_anonym_cat[,c("CI_female_nd_up", "Variable")]
-tbl1_anonym_up$bound = "up"
-names(tbl1_anonym_up)[names(tbl1_anonym_up) == "CI_female_nd_up"] <- "CI_bound_female_nd"
-tbl1_anonym_female_nd <- rbind(tbl1_anonym_low, tbl1_anonym_up)
-tbl1_anonym_2_cat <- tbl1_anonym_2 %>% subset(Variable != "BL_ku_sys" & Variable != "BL_ku_dia" & Variable != "BL_ku_map" & 
-                                                Variable != "BL_ku_ruhepuls" & Variable != "BL_creavalue" & 
-                                                Variable != "BL_cysvalue" & Variable != "BL_gfr_mdrd" & Variable != "male")
-tbl1_anonym_2_cat <- subset(tbl1_anonym_2_cat, !(endsWith(Variable, '_no')))
-tbl1_anonym_2_cat$Variable <- factor(tbl1_anonym_2_cat$Variable, levels = c("biopsy_yes", "BL_med_bblocker_yes", 
-                                                                            "BL_med_caanta_yes", "BL_med_diuretic_loop_yes",
-                                                                            "BL_med_diuretic_aldost_yes","BL_med_diuretic_thiazid_yes", 
-                                                                            "BL_med_diuretic_yes", "BL_med_raas_single_yes", 
-                                                                            "BL_med_raas_double_yes", "BL_med_raas_at1_yes", 
-                                                                            "BL_med_raas_ace_yes", "hospital_yes", "smoking_never", 
-                                                                            "smoking_former", "smoking_current", "aa_ntx_yes", 
-                                                                            "aa_dialyse_yes", "aa_renal_stones_yes", "aa_renal_yes",
-                                                                            "aa_diabetes_yes", "aa_hypertens_yes", "aa_myocard_yes", 
-                                                                            "aa_stroke_yes", "female")) 
-tbl1_anonym_2_low <- tbl1_anonym_2_cat[,c("CI_female_nd_low", "Variable")]
-tbl1_anonym_2_low$bound = "low"
-names(tbl1_anonym_2_low)[names(tbl1_anonym_2_low) == "CI_female_nd_low"] <- "CI_bound_female_nd"
-tbl1_anonym_2_up <- tbl1_anonym_2_cat[,c("CI_female_nd_up", "Variable")]
-tbl1_anonym_2_up$bound = "up"
-names(tbl1_anonym_2_up)[names(tbl1_anonym_2_up) == "CI_female_nd_up"] <- "CI_bound_female_nd"
-tbl1_anonym_2_female_nd <- rbind(tbl1_anonym_2_low, tbl1_anonym_2_up)
-tbl1_anonym_3_cat <- tbl1_anonym_3 %>% subset(Variable != "BL_ku_sys" & Variable != "BL_ku_dia" & Variable != "BL_ku_map" & 
-                                                Variable != "BL_ku_ruhepuls" & Variable != "BL_creavalue" & 
-                                                Variable != "BL_cysvalue" & Variable != "BL_gfr_mdrd" & Variable != "male")
-tbl1_anonym_3_cat <- subset(tbl1_anonym_3_cat, !(endsWith(Variable, '_no')))
-tbl1_anonym_3_cat$Variable <- factor(tbl1_anonym_3_cat$Variable, levels = c("biopsy_yes", "BL_med_bblocker_yes", 
-                                                                            "BL_med_caanta_yes", "BL_med_diuretic_loop_yes",
-                                                                            "BL_med_diuretic_aldost_yes","BL_med_diuretic_thiazid_yes", 
-                                                                            "BL_med_diuretic_yes", "BL_med_raas_single_yes", 
-                                                                            "BL_med_raas_double_yes", "BL_med_raas_at1_yes", 
-                                                                            "BL_med_raas_ace_yes", "hospital_yes", "smoking_never", 
-                                                                            "smoking_former", "smoking_current", "aa_ntx_yes", 
-                                                                            "aa_dialyse_yes", "aa_renal_stones_yes", "aa_renal_yes",
-                                                                            "aa_diabetes_yes", "aa_hypertens_yes", "aa_myocard_yes", 
-                                                                            "aa_stroke_yes", "female")) 
-tbl1_anonym_3_low <- tbl1_anonym_3_cat[,c("CI_female_nd_low", "Variable")]
-tbl1_anonym_3_low$bound = "low"
-names(tbl1_anonym_3_low)[names(tbl1_anonym_3_low) == "CI_female_nd_low"] <- "CI_bound_female_nd"
-tbl1_anonym_3_up <- tbl1_anonym_3_cat[,c("CI_female_nd_up", "Variable")]
-tbl1_anonym_3_up$bound = "up"
-names(tbl1_anonym_3_up)[names(tbl1_anonym_3_up) == "CI_female_nd_up"] <- "CI_bound_female_nd"
-tbl1_anonym_3_female_nd <- rbind(tbl1_anonym_3_low, tbl1_anonym_3_up)
-tbl1_anonym_4_cat <- tbl1_anonym_4 %>% subset(Variable != "BL_ku_sys" & Variable != "BL_ku_dia" & Variable != "BL_ku_map" & 
-                                                Variable != "BL_ku_ruhepuls" & Variable != "BL_creavalue" & 
-                                                Variable != "BL_cysvalue" & Variable != "BL_gfr_mdrd" & Variable != "male")
-tbl1_anonym_4_cat <- subset(tbl1_anonym_4_cat, !(endsWith(Variable, '_no')))
-tbl1_anonym_4_cat$Variable <- factor(tbl1_anonym_4_cat$Variable, levels = c("biopsy_yes", "BL_med_bblocker_yes", 
-                                                                            "BL_med_caanta_yes", "BL_med_diuretic_loop_yes",
-                                                                            "BL_med_diuretic_aldost_yes","BL_med_diuretic_thiazid_yes", 
-                                                                            "BL_med_diuretic_yes", "BL_med_raas_single_yes", 
-                                                                            "BL_med_raas_double_yes", "BL_med_raas_at1_yes", 
-                                                                            "BL_med_raas_ace_yes", "hospital_yes", "smoking_never", 
-                                                                            "smoking_former", "smoking_current", "aa_ntx_yes", 
-                                                                            "aa_dialyse_yes", "aa_renal_stones_yes", "aa_renal_yes",
-                                                                            "aa_diabetes_yes", "aa_hypertens_yes", "aa_myocard_yes", 
-                                                                            "aa_stroke_yes", "female")) 
-tbl1_anonym_4_low <- tbl1_anonym_4_cat[,c("CI_female_nd_low", "Variable")]
-tbl1_anonym_4_low$bound = "low"
-names(tbl1_anonym_4_low)[names(tbl1_anonym_4_low) == "CI_female_nd_low"] <- "CI_bound_female_nd"
-tbl1_anonym_4_up <- tbl1_anonym_4_cat[,c("CI_female_nd_up", "Variable")]
-tbl1_anonym_4_up$bound = "up"
-names(tbl1_anonym_4_up)[names(tbl1_anonym_4_up) == "CI_female_nd_up"] <- "CI_bound_female_nd"
-tbl1_anonym_4_female_nd <- rbind(tbl1_anonym_4_low, tbl1_anonym_4_up)
-ggplot() + 
-  geom_line(data=tbl1_anonym_female_nd, aes(x = CI_bound_female_nd, y = Variable, group = Variable), size=0.5, color = "indianred4", position = position_nudge(y = 0.2)) +
-  geom_point(data=tbl1_anonym_female_nd, aes(x = CI_bound_female_nd, y = Variable, group = Variable), shape="|", size=3, color = "indianred4", position = position_nudge(y = 0.2)) +
-  geom_point(data=tbl1_anonym_cat, aes(x = perc_female_nd, y = Variable, group = Variable), size=2, color = "indianred4", position = position_nudge(y = 0.2)) + 
-  geom_line(data=tbl1_anonym_2_female_nd, aes(x = CI_bound_female_nd, y = Variable, group = Variable), size=0.5, color = "gold", position = position_nudge(y = 0.4)) +
-  geom_point(data=tbl1_anonym_2_female_nd, aes(x = CI_bound_female_nd, y = Variable, group = Variable), shape="|", size=3, color = "gold", position = position_nudge(y = 0.4)) +
-  geom_point(data=tbl1_anonym_2_cat, aes(x = perc_female_nd, y = Variable, group = Variable), size=2, color = "gold", position = position_nudge(y = 0.4)) + 
-  geom_line(data=tbl1_anonym_3_female_nd, aes(x = CI_bound_female_nd, y = Variable, group = Variable), size=0.5, color = "darkseagreen3", position = position_nudge(y = -0.2)) +
-  geom_point(data=tbl1_anonym_3_female_nd, aes(x = CI_bound_female_nd, y = Variable, group = Variable), shape="|", size=3, color = "darkseagreen3", position = position_nudge(y = -0.2)) +
-  geom_point(data=tbl1_anonym_3_cat, aes(x = perc_female_nd, y = Variable, group = Variable), size=2, color = "darkseagreen3", position = position_nudge(y = -0.2)) + 
-  geom_line(data=tbl1_anonym_4_female_nd, aes(x = CI_bound_female_nd, y = Variable, group = Variable), size=0.5, color = "lightblue4", position = position_nudge(y = -0.4)) +
-  geom_point(data=tbl1_anonym_4_female_nd, aes(x = CI_bound_female_nd, y = Variable, group = Variable), shape="|", size=3, color = "lightblue4", position = position_nudge(y = -0.4)) +
-  geom_point(data=tbl1_anonym_4_cat, aes(x = perc_female_nd, y = Variable, group = Variable), size=2, color = "lightblue4", position = position_nudge(y = -0.4)) +
-  geom_line(data=tbl1_origin_female_nd, aes(x = CI_bound_female_nd, y = Variable, group = Variable), size=0.5, alpha = 0.7, color = "azure4", position = position_nudge(y = 0)) +
-  geom_point(data=tbl1_origin_female_nd, aes(x = CI_bound_female_nd, y = Variable, group = Variable), shape="|", size=3, alpha = 0.7, color = "azure4", position = position_nudge(y = 0)) +
-  geom_point(data=tbl1_origin_cat, aes(x = perc_female_nd, y = Variable, group = Variable), size=2, alpha = 0.7, color = "azure4", position = position_nudge(y = 0)) 
-ggplot() + 
-  geom_line(data=tbl1_anonym_female_nd, aes(x = CI_bound_female_nd, y = Variable, group = Variable), size=0.5, color = "indianred4", position = position_nudge(y = 0.2)) +
-  geom_point(data=tbl1_anonym_female_nd, aes(x = CI_bound_female_nd, y = Variable, group = Variable), shape="|", size=3, color = "indianred4", position = position_nudge(y = 0.2)) +
-  geom_point(data=tbl1_anonym_cat, aes(x = perc_female_nd, y = Variable, group = Variable), size=2, color = "indianred4", position = position_nudge(y = 0.2)) + 
-  geom_line(data=tbl1_anonym_2_female_nd, aes(x = CI_bound_female_nd, y = Variable, group = Variable), size=0.5, color = "gold", position = position_nudge(y = 0.4)) +
-  geom_point(data=tbl1_anonym_2_female_nd, aes(x = CI_bound_female_nd, y = Variable, group = Variable), shape="|", size=3, color = "gold", position = position_nudge(y = 0.4)) +
-  geom_point(data=tbl1_anonym_2_cat, aes(x = perc_female_nd, y = Variable, group = Variable), size=2, color = "gold", position = position_nudge(y = 0.4)) + 
-  geom_line(data=tbl1_anonym_3_female_nd, aes(x = CI_bound_female_nd, y = Variable, group = Variable), size=0.5, color = "darkseagreen3", position = position_nudge(y = -0.2)) +
-  geom_point(data=tbl1_anonym_3_female_nd, aes(x = CI_bound_female_nd, y = Variable, group = Variable), shape="|", size=3, color = "darkseagreen3", position = position_nudge(y = -0.2)) +
-  geom_point(data=tbl1_anonym_3_cat, aes(x = perc_female_nd, y = Variable, group = Variable), size=2, color = "darkseagreen3", position = position_nudge(y = -0.2)) + 
-  geom_line(data=tbl1_anonym_4_female_nd, aes(x = CI_bound_female_nd, y = Variable, group = Variable), size=0.5, color = "lightblue4", position = position_nudge(y = -0.4)) +
-  geom_point(data=tbl1_anonym_4_female_nd, aes(x = CI_bound_female_nd, y = Variable, group = Variable), shape="|", size=3, color = "lightblue4", position = position_nudge(y = -0.4)) +
-  geom_point(data=tbl1_anonym_4_cat, aes(x = perc_female_nd, y = Variable, group = Variable), size=2, color = "lightblue4", position = position_nudge(y = -0.4)) +
-  geom_line(data=tbl1_origin_female_nd, aes(x = CI_bound_female_nd, y = Variable, group = Variable), size=0.5, alpha = 0.7, color = "azure4", position = position_nudge(y = 0)) +
-  geom_point(data=tbl1_origin_female_nd, aes(x = CI_bound_female_nd, y = Variable, group = Variable), shape="|", size=3, alpha = 0.7, color = "azure4", position = position_nudge(y = 0)) +
-  geom_point(data=tbl1_origin_cat, aes(x = perc_female_nd, y = Variable, group = Variable), size=2, alpha = 0.7, color = "azure4", position = position_nudge(y = 0)) + 
-  theme(axis.title.x=element_blank(),
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank())
+tbl1_ci <- tbl1_ci %>% replace(is.na(.), 100.0)
+write.xlsx(tbl1_ci, "tb1_CIoverlap_kanonymity_generic_11.xlsx")
+
+# Fig 1: 100% replicability
 
 # Tbl 2
-# Preprocessing
+## Datasets
+tbl2_total_origin <- as_tibble(read.xlsx("tbl2_origin.xlsx"))
+tbl2_total_origin <- subset(tbl2_total_origin, tbl2_total_origin$Variable != "BL_age")
+tbl2_origin <- subset(tbl2_total_origin, tbl2_total_origin$Variable == "Male" |
+                            tbl2_total_origin$Variable == "biopsy_yes" |
+                            tbl2_total_origin$Variable == "cardiovasc_less60_yes" |
+                            tbl2_total_origin$Variable == "cardiovasc_more60_yes")
+tbl2_anonym <- as_tibble(read.xlsx("tbl2_kanonymity_generic_11.xlsx"))
+
 ## Separating 95% CI bounds
 tbl2_origin[c("CI_egfr_low", "CI_egfr_up")] <- str_split_fixed(tbl2_origin$CI_egfr, "-", 2)
 tbl2_origin$CI_egfr_low <- as.numeric(tbl2_origin$CI_egfr_low)
@@ -329,27 +140,10 @@ tbl2_anonym$CI_prot_up <- as.numeric(tbl2_anonym$CI_prot_up)
 ## Rounding 1 decimal
 tbl2_origin <- tbl2_origin %>% mutate(across(where(is.numeric), ~round(., 1)))
 tbl2_anonym <- tbl2_anonym %>% mutate(across(where(is.numeric), ~round(., 1)))
-# Calculations
-## estimate within 95% CI
-tbl2_est <- data.frame(NA_col = rep(NA, 52))
-res_egfr = numeric(52)
-res_prot = numeric(52)
-for(i in 1:nrow((tbl2_anonym))) {
-  var = tbl2_origin$Variable[i]
-  res_egfr[i] <- estimate_CI(tbl2_origin$CI_egfr_low[i], tbl2_origin$CI_egfr_up[i], tbl2_anonym$perc_egfr[i])
-  tbl2_est[, 1] <- res_egfr
-  res_prot[i] <- estimate_CI(tbl2_origin$CI_prot_low[i], tbl2_origin$CI_prot_up[i], tbl2_anonym$perc_prot[i])
-  tbl2_est[, 2] <- res_prot
-  rownames(tbl2_est)[i] <- paste0(var)
-  colnames(tbl2_est)[1] <- paste0("Estimate_egfr")
-  colnames(tbl2_est)[2] <- paste0("Estimate_prot")
-}
-tbl2_est$Variable <- row.names(tbl2_est)
-write.xlsx(tbl2_est, "GCKD_results_est_tbl2_specific_k11k2.xlsx")
-## overlapping 95% CI
-tbl2_ci <- data.frame(NA_col = rep(NA, 52))
-res_ci_egfr = numeric(52)
-res_ci_prot = numeric(52)
+## Overlapping 95% CI
+tbl2_ci <- data.frame(NA_col = rep(NA, 4))
+res_ci_egfr = numeric(4)
+res_ci_prot = numeric(4)
 for(i in 1:nrow((tbl2_anonym))) {
   var = tbl2_origin$Variable[i]
   res_ci_egfr[i] <- CI_overlap(tbl2_origin$CI_egfr_low[i], tbl2_origin$CI_egfr_up[i], tbl2_anonym$CI_egfr_low[i], tbl2_anonym$CI_egfr_up[i])
@@ -361,10 +155,26 @@ for(i in 1:nrow((tbl2_anonym))) {
   colnames(tbl2_ci)[2] <- paste0("CI_overlap_prot")
 }
 tbl2_ci$Variable <- row.names(tbl2_ci)
-write.xlsx(tbl2_ci, "GCKD_results_ci_tbl2_specific_k11k2.xlsx")
+## Adding 100% replicability
+tbl2_ci <- full_join(x = tbl2_total_origin, y = tbl2_ci, by = "Variable")
+tbl2_ci <- tbl2_ci %>% replace(is.na(.), 100.0)
+tbl2_ci <- subset(tbl2_ci, select = c(CI_overlap_egfr, CI_overlap_prot, Variable))
+write.xlsx(tbl2_ci, "tbl2_CIoverlap_kanonymity_generic_11.xlsx")
+
+# Fig 2: 100% replicability
 
 # Tbl 3
-# Preprocessing
+## Datasets
+tbl3_total_origin <- as_tibble(read.xlsx("tbl3_origin.xlsx"))
+tbl3_total_origin_t <- data.frame(t(tbl3_total_origin[-1]))
+colnames(tbl3_total_origin_t) <- c("biopsy", "biopsy_no", "CI_biopsy", "(Missing)")
+tbl3_total_origin_t$Variable <- row.names(tbl3_total_origin_t)
+tbl3_origin <- subset(tbl3_total_origin_t, select = c("Variable", "CI_biopsy"), !(startsWith(tbl3_total_origin_t$Variable, "perc_")))
+tbl3_total_anonym <- as_tibble(read.xlsx("tbl3_kanonymity_generic_11.xlsx"))
+tbl3_total_anonym_t <- data.frame(t(tbl3_total_anonym[-1]))
+colnames(tbl3_total_anonym_t) <- c("biopsy", "biopsy_no", "CI_biopsy", "(Missing)")
+tbl3_total_anonym_t$Variable <- row.names(tbl3_total_anonym_t)
+tbl3_anonym <- subset(tbl3_total_anonym_t, select = c("Variable", "CI_biopsy"), !(startsWith(tbl3_total_anonym_t$Variable, "perc_")))
 ## Separating 95% CI bounds
 tbl3_origin[c("CI_biopsy_low", "CI_biopsy_up")] <- str_split_fixed(tbl3_origin$CI_biopsy, "-", 2)
 tbl3_origin$CI_biopsy_low <- as.numeric(tbl3_origin$CI_biopsy_low)
@@ -375,22 +185,9 @@ tbl3_anonym$CI_biopsy_up <- as.numeric(tbl3_anonym$CI_biopsy_up)
 ## Rounding 1 decimal
 tbl3_origin <- tbl3_origin %>% mutate(across(where(is.numeric), ~round(., 1)))
 tbl3_anonym <- tbl3_anonym %>% mutate(across(where(is.numeric), ~round(., 1)))
-# Calculations
-## estimate within 95% CI
-tbl3_est <- data.frame(NA_col = rep(NA, 52))
-res_biopsy = numeric(52)
-for(i in 1:nrow((tbl3_anonym))) {
-  var = tbl3_origin$Variable[i]
-  res_biopsy[i] <- estimate_CI(tbl3_origin$CI_biopsy_low[i], tbl3_origin$CI_biopsy_up[i], tbl3_anonym$perc_biopsy[i])
-  tbl3_est[, 1] <- res_biopsy
-  rownames(tbl3_est)[i] <- paste0(var)
-  colnames(tbl3_est)[1] <- paste0("Estimate_biopsy")
-}
-tbl3_est$Variable <- row.names(tbl3_est)
-write.xlsx(tbl3_est, "GCKD_results_est_tbl3_specific_k11k2.xlsx")
-## overlapping 95% CI
-tbl3_ci <- data.frame(NA_col = rep(NA, 52))
-res_CI_biopsy = numeric(52)
+## Overlapping 95% CI
+tbl3_ci <- data.frame(NA_col = rep(NA, 11))
+res_CI_biopsy = numeric(11)
 for(i in 1:nrow((tbl3_anonym))) {
   var = tbl3_origin$Variable[i]
   res_CI_biopsy[i] <- CI_overlap(tbl3_origin$CI_biopsy_low[i], tbl3_origin$CI_biopsy_up[i], tbl3_anonym$CI_biopsy_low[i], tbl3_anonym$CI_biopsy_up[i])
@@ -399,7 +196,21 @@ for(i in 1:nrow((tbl3_anonym))) {
   colnames(tbl3_ci)[1] <- paste0("CI_overlap_biopsy")
 }
 tbl3_ci$Variable <- row.names(tbl3_ci)
-write.xlsx(tbl3_ci, "GCKD_results_ci_tbl3_specific_k11k2.xlsx")
+## Adding 100% replicability
+CI_overlap_ckd_diab = c(100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100)
+CI_overlap_ckd_oth = c(100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100)
+CI_overlap_ckd_lead_uk = c(100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100)
+CI_overlap_ckd_vask = c(100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100)
+CI_overlap_ckd_syst = c(100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100)
+CI_overlap_ckd_glom_prim = c(100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100)
+CI_overlap_ckd_interst = c(100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100)
+CI_overlap_ckd_aki = c(100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100)
+CI_overlap_ckd_single = c(100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100)
+CI_overlap_ckd_heredit = c(100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100)
+CI_overlap_ckd_obstr = c(100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100)
+tbl3_ci_total <- cbind(CI_overlap_ckd_diab, CI_overlap_ckd_oth, CI_overlap_ckd_lead_uk, CI_overlap_ckd_vask, CI_overlap_ckd_syst, CI_overlap_ckd_glom_prim, 
+                       CI_overlap_ckd_interst, CI_overlap_ckd_aki, CI_overlap_ckd_single, CI_overlap_ckd_heredit, CI_overlap_ckd_obstr, tbl3_ci)
+write.xlsx(tbl3_ci_total, "tbl3_CIoverlap_kanonymity_generic_11.xlsx")
 
 # Tbl 4
 # Preprocessing
@@ -1054,18 +865,18 @@ ggplot() +
 
 # Comparing generic purpose utility and privacy metrics
 df <- as_tibble(read.xlsx("GCKD_results_genericmetrics.xlsx", sep = ";"))
-df <- df %>% mutate(avg_safe = 100-Risk_avg)
+df <- df %>% mutate(safe_avg = 100-risk_avg)
 ggplot() +
-  geom_point(data = df, aes(avg_safe, Granular, colour = factor(Model)), shape = 16, size = 5) +
-  geom_point(data = df, aes(avg_safe, Discern, colour = factor(Model)), shape = 17, size = 5) +
-  geom_point(data = df, aes(avg_safe, Entropy, colour = factor(Model)), shape = 15, size = 5) +
+  geom_point(data = df, aes(safe_avg, utiliy_granular, colour = factor(model)), shape = 16, size = 5) +
+  geom_point(data = df, aes(safe_avg, utiliy_discern, colour = factor(model)), shape = 17, size = 5) +
+  geom_point(data = df, aes(safe_avg, utiliy_entropy, colour = factor(model)), shape = 15, size = 5) +
   scale_color_manual(values = c("Gen_11" = "indianred4", "Gen_11_2" = "gold", "Spec_11" = "darkseagreen3", "Spec_11_2" = "lightblue4")) +
   scale_y_continuous(limits = c(0, 100)) + 
   scale_x_continuous(limits = c(0, 100))
 ggplot() +
-  geom_point(data = df, aes(avg_safe, Granular, colour = factor(Model)), shape = 16, size = 5) +
-  geom_point(data = df, aes(avg_safe, Discern, colour = factor(Model)), shape = 17, size = 5) +
-  geom_point(data = df, aes(avg_safe, Entropy, colour = factor(Model)), shape = 15, size = 5) +
+  geom_point(data = df, aes(safe_avg, utiliy_granular, colour = factor(model)), shape = 16, size = 5) +
+  geom_point(data = df, aes(safe_avg, utiliy_discern, colour = factor(model)), shape = 17, size = 5) +
+  geom_point(data = df, aes(safe_avg, utiliy_entropy, colour = factor(model)), shape = 15, size = 5) +
   scale_color_manual(values = c("Gen_11" = "indianred4", "Gen_11_2" = "gold", "Spec_11" = "darkseagreen3", "Spec_11_2" = "lightblue4")) +
   scale_y_continuous(limits = c(0, 100)) + 
   scale_x_continuous(limits = c(0, 100)) +

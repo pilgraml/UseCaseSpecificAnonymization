@@ -6,6 +6,8 @@ pacman::p_load(tidyr, stringr, dplyr, openxlsx, naniar, emmeans, multcomp,
 
 # Dataset
 path_data = "D:/BackUp GCKD"
+path_results = "C:/Users/User/OneDrive/Documents/PRIVAT/Charite/Forschung/Projekt Computerbasierte Anonymisierung/Titzeetal/Ergebnisse"
+path_tbl = "C:/Users/User/OneDrive/Documents/PRIVAT/Charite/Forschung/Projekt Computerbasierte Anonymisierung/Titzeetal/Ergebnisse/Tbl_perc_CI"
 setwd(path_data)
 GCKD_df1 <- as_tibble(read.xlsx("GCKD_df1_origin.xlsx", sep = ";"))
 dim(GCKD_df1)
@@ -46,26 +48,57 @@ GCKD_df1$BL_med_caanta <- mapvalues(GCKD_df1$BL_med_caanta, from = c("1", "2"), 
 GCKD_df1$BL_med_bblocker <- mapvalues(GCKD_df1$BL_med_bblocker, from = c("1", "2"), to = c("BL_med_bblocker_yes", "BL_med_bblocker_no"))
 GCKD_df1$biopsy <- mapvalues(GCKD_df1$biopsy, from = c("1", "2"), to = c("biopsy_yes", "biopsy_no"))
 GCKD_df1$diabetes <- mapvalues(GCKD_df1$diabetes, from = c("1", "2"), to = c("diabetes_yes", "diabetes_no"))
+GCKD_df1$incl_egfr <- mapvalues(GCKD_df1$incl_egfr, from = c("1", "2"), to = c("egfr", "prot"))
+GCKD_df1$cardiovasc <- mapvalues(GCKD_df1$cardiovasc, from = c("1", "2"), to = c("cardiovasc_yes", "cardiovasc_no"))
+GCKD_df1$hypertension <- mapvalues(GCKD_df1$hypertension, from = c("1", "2"), to = c("hypertension_yes", "hypertension_no"))
+GCKD_df1$valve <- mapvalues(GCKD_df1$valve, from = c("1", "2"), to = c("valve_yes", "valve_no"))
+GCKD_df1$coronary <- mapvalues(GCKD_df1$coronary, from = c("1", "2"), to = c("coronary_yes", "coronary_no"))
+GCKD_df1$myocard <- mapvalues(GCKD_df1$myocard, from = c("1", "2"), to = c("myocard_yes", "myocard_no"))
+GCKD_df1$bypass <- mapvalues(GCKD_df1$bypass, from = c("1", "2"), to = c("bypass_yes", "bypass_no"))
+GCKD_df1$ptca <- mapvalues(GCKD_df1$ptca, from = c("1", "2"), to = c("ptca_yes", "ptca_no"))
+GCKD_df1$cerebrovasc <- mapvalues(GCKD_df1$cerebrovasc, from = c("1", "2"), to = c("cerebrovasc_yes", "cerebrovasc_no"))
+GCKD_df1$stroke <- mapvalues(GCKD_df1$stroke, from = c("1", "2"), to = c("stroke_yes", "stroke_no"))
+GCKD_df1$carotic_surg <- mapvalues(GCKD_df1$carotic_surg, from = c("1", "2"), to = c("carotic_surg_yes", "carotic_surg_no"))
+GCKD_df1$carotic_interv <- mapvalues(GCKD_df1$carotic_interv, from = c("1", "2"), to = c("carotic_interv_yes", "carotic_interv_no"))
+GCKD_df1$pavk <- mapvalues(GCKD_df1$pavk, from = c("1", "2"), to = c("pavk_yes", "pavk_no"))
+GCKD_df1$amput <- mapvalues(GCKD_df1$amput, from = c("1", "2"), to = c("amput_yes", "amput_no"))
+GCKD_df1$ygraft <- mapvalues(GCKD_df1$ygraft, from = c("1", "2"), to = c("ygraft_yes", "ygraft_no"))
+GCKD_df1$pavk_surgery <- mapvalues(GCKD_df1$pavk_surgery, from = c("1", "2"), to = c("pavk_surgery_yes", "pavk_surgery_no"))
+GCKD_df1$pta <- mapvalues(GCKD_df1$pta, from = c("1", "2"), to = c("pta_yes", "pta_no"))
+GCKD_df1$education <- mapvalues(GCKD_df1$education, from = c("1", "2", "3", "4"), to = c("edu_low", "edu_medium", "edu_high", "edu_uk"))
 col_num <- c("BL_ku_sys", "BL_ku_dia", "BL_ku_map", "BL_ku_ruhepuls", "BL_creavalue", "BL_cysvalue", 
              "BL_gfr_mdrd", "BL_gfr_ckdepi", "BL_gfr_ckdepi_cys", "BL_gfr_ckdepi_creacys", "BL_uacr", "BL_ku_bmi", "BL_age", "BL_ku_height_cm", "BL_ku_weight")
 GCKD_df1 <- GCKD_df1 %>% mutate(across(all_of(col_num), as.numeric))
-GCKD_df1 <- GCKD_df1 %>% mutate(DM = ifelse(GCKD_df1$diabetes == 2, "No DM", ifelse(GCKD_df1$ckd_lead == "ckd_diab", "DMwDN", "DMwoDN")))
+GCKD_df1 <- GCKD_df1 %>% mutate(BMI_cat = ifelse(GCKD_df1$BL_ku_bmi > 30, ">30", ifelse(GCKD_df1$BL_ku_bmi <= 30 & GCKD_df1$BL_ku_bmi > 25, "25.1-29.9", 
+                                                                                                  ifelse(GCKD_df1$BL_ku_bmi <= 25, "<=25", "BMI_uk"))))
+GCKD_df1$BMI_cat <- factor(GCKD_df1$BMI_cat, c(">30", "25.1-29.9", "<=25"))
+GCKD_df1 <- GCKD_df1 %>% mutate(RR130 = ifelse(GCKD_df1$BL_ku_sys < 130 & GCKD_df1$BL_ku_dia < 80, "RR130_yes", "RR130_no"))
+GCKD_df1 <- GCKD_df1 %>% mutate(RR140 = ifelse(GCKD_df1$BL_ku_sys < 140 & GCKD_df1$BL_ku_dia < 90, "RR140_yes", "RR140_no"))
+GCKD_df1 <- GCKD_df1 %>% mutate(gfr_mdrd_cat = ifelse(GCKD_df1$BL_gfr_mdrd >= 60, "GFR60", ifelse(GCKD_df1$BL_gfr_mdrd >= 45 & GCKD_df1$BL_gfr_mdrd < 60, "GFR4560", 
+                                                                                                  ifelse(GCKD_df1$BL_gfr_mdrd >= 30 & GCKD_df1$BL_gfr_mdrd < 45, "GFR3045", 
+                                                                                                         ifelse(GCKD_df1$BL_gfr_mdrd < 30, "GFR30", "GFR_uk")))))
+GCKD_df1$gfr_mdrd_cat <- factor(GCKD_df1$gfr_mdrd_cat, c("GFR60", "GFR4560", "GFR3045", "GFR30"))
+GCKD_df1 <- GCKD_df1 %>% mutate(uacr_cat = ifelse(GCKD_df1$BL_uacr < 30, "UACR30", ifelse(GCKD_df1$BL_uacr >= 30 & GCKD_df1$BL_uacr <= 300, "UACR30300", 
+                                                                                                  ifelse(GCKD_df1$BL_uacr > 300, "UACR300", "UACR_uk"))))
+GCKD_df1$uacr_cat <- factor(GCKD_df1$uacr_cat, c("UACR30", "UACR30300", "UACR300"))
+GCKD_df1 <- GCKD_df1 %>% mutate(DM = ifelse(GCKD_df1$diabetes == "diabetes_no", "No DM", ifelse(GCKD_df1$ckd_lead == "ckd_diab", "DMwDN", "DMwoDN")))
 
-# Titze et al: Disease burden and risk profile in referred patients with moderate chronic kidney disease: composition of the German Chronic Kidney Disease (GCKD) cohort
-## Table 1 including 95% CI for distribution or mean, BL_uacr not included
-## perc for continous SD
-var_table_1 <- c("BL_age", "dem_sex", "aa_stroke", "aa_myocard", "aa_hypertens", "aa_diabetes", "aa_renal", 
+# Table 1 including 95% CI for distribution or mean
+## column perc in for numerical data is SD
+## apart from UACR median CI everything included
+var_table_1 <- c("dem_sex", "diabetes", "BL_age", "aa_stroke", "aa_myocard", "aa_hypertens", "aa_diabetes", "aa_renal", 
                  "aa_renal_stones", "aa_dialyse", "aa_ntx", "smoking", "hospital", "BL_ku_height_cm","BL_ku_weight", 
-                 "BL_ku_bmi", "BL_ku_sys", "BL_ku_dia", "BL_ku_map", "BL_ku_ruhepuls", "BL_creavalue", "BL_cysvalue",
-                 "BL_gfr_mdrd", "BL_med_raas_ace", "BL_med_raas_at1", "BL_med_raas_double", 
+                 "BL_ku_bmi", "BMI_cat", "BL_ku_ruhepuls", "BL_ku_sys", "BL_ku_dia", "BL_ku_map", "RR130", "RR140", "BL_creavalue", "BL_cysvalue",
+                 "BL_gfr_mdrd", "gfr_mdrd_cat", "BL_uacr", "uacr_cat", "BL_med_raas_ace", "BL_med_raas_at1", "BL_med_raas_double", 
                  "BL_med_raas_single", "BL_med_diuretic", "BL_med_diuretic_thiazid", "BL_med_diuretic_aldost", 
-                 "BL_med_diuretic_loop", "BL_med_caanta", "BL_med_bblocker", "biopsy", "diabetes")
+                 "BL_med_diuretic_loop", "BL_med_caanta", "BL_med_bblocker", "biopsy")
 theme_gtsummary_language("en", big.mark = "")
 GCKD_df1_table_1a <-
   GCKD_df1 %>%
   select(all_of(var_table_1)) %>%
   tbl_summary(
     statistic = list(all_continuous() ~ "{mean}",
+                     BL_uacr ~ "{median}", 
                      all_categorical() ~ "{n}"),
     digits = all_continuous() ~ 1,
     missing_text = "(Missing)") %>%
@@ -76,6 +109,7 @@ GCKD_df1_table_1b <-
   select(all_of(var_table_1)) %>%
   tbl_summary(
     statistic = list(all_continuous() ~ "{sd}",
+                     BL_uacr ~ "{p25}-{p75}",
                      all_categorical() ~ "{p}"),
     digits = ~ 1,
     missing_text = "(Missing)") %>%
@@ -91,52 +125,31 @@ GCKD_df1_table_1 %>%
   as_gt() %>%
   gt::gtsave(filename = "GCKD_origin_table_1.html", 
              path = path_results)
+## UACR median CI calculation
+UACR_MedCI <- MedianCI(GCKD_df1$BL_uacr, na.rm=TRUE)
+UACR_CI_low <- round(UACR_MedCI[2], 1)
+UACR_CI_high <-round(UACR_MedCI[3], 1)
+UACR_CI <- paste(UACR_CI_low, UACR_CI_high, sep="-")
+### clean and combine data
 GCKD_df1_table_1 <- as_tibble(GCKD_df1_table_1)
-setwd(path_results)
+GCKD_df1_table_1$CI_total[GCKD_df1_table_1$Variable == "BL_uacr"] <- UACR_CI
+setwd(path_tbl)
 write.xlsx(GCKD_df1_table_1, "tbl1_total_origin.xlsx")
-
-### calculated values in Table 1
-table(GCKD_df1$BL_ku_bmi > 30,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$BL_ku_bmi > 30, na.rm=TRUE), n=sum(!is.na(GCKD_df1$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1$BL_ku_bmi <= 30 & GCKD_df1$BL_ku_bmi > 25,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$BL_ku_bmi <= 30 & GCKD_df1$BL_ku_bmi > 25, na.rm=TRUE), n=sum(!is.na(GCKD_df1$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1$BL_ku_bmi <= 25,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$BL_ku_bmi <= 25, na.rm=TRUE), n=sum(!is.na(GCKD_df1$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1$BL_ku_sys < 130 & GCKD_df1$BL_ku_dia < 80,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$BL_ku_sys < 130 & GCKD_df1$BL_ku_dia < 80, na.rm=TRUE), n=sum(!is.na(GCKD_df1$BL_ku_sys)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1$BL_ku_sys < 140 & GCKD_df1$BL_ku_dia < 90,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$BL_ku_sys < 140 & GCKD_df1$BL_ku_dia < 90, na.rm=TRUE), n=sum(!is.na(GCKD_df1$BL_ku_sys)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1$BL_gfr_mdrd >= 60,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$BL_gfr_mdrd >= 60, na.rm=TRUE), n=sum(!is.na(GCKD_df1$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1$BL_gfr_mdrd >= 45 & GCKD_df1$BL_gfr_mdrd < 60,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$BL_gfr_mdrd >= 45 & GCKD_df1$BL_gfr_mdrd < 60, na.rm=TRUE), n=sum(!is.na(GCKD_df1$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1$BL_gfr_mdrd >= 30 & GCKD_df1$BL_gfr_mdrd < 45,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$BL_gfr_mdrd >= 30 & GCKD_df1$BL_gfr_mdrd < 45, na.rm=TRUE), n=sum(!is.na(GCKD_df1$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1$BL_gfr_mdrd < 30,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$BL_gfr_mdrd < 30, na.rm=TRUE), n=sum(!is.na(GCKD_df1$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-summary(GCKD_df1$BL_uacr)
-MedianCI(GCKD_df1$BL_uacr, na.rm=TRUE)
-table(GCKD_df1$BL_uacr < 30,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$BL_uacr < 30, na.rm=TRUE), n=sum(!is.na(GCKD_df1$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1$BL_uacr >= 30 & GCKD_df1$BL_uacr <= 300,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$BL_uacr >= 30 & GCKD_df1$BL_uacr <= 300, na.rm=TRUE), n=sum(!is.na(GCKD_df1$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1$BL_uacr > 300,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$BL_uacr > 300, na.rm=TRUE), n=sum(!is.na(GCKD_df1$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
 
 ## Table 1 subset female
 GCKD_df1_fem <- GCKD_df1 %>% subset(dem_sex == "Female")
 theme_gtsummary_language("en", big.mark = "")
-table(GCKD_df1_fem$diabetes, useNA = "always")
 GCKD_df1_fem_table_1a <-
   GCKD_df1_fem %>%
   select(all_of(var_table_1)) %>%
   tbl_summary(
     by = diabetes,
     statistic = list(all_continuous() ~ "{mean}",
+                     BL_uacr ~ "{median}", 
                      all_categorical() ~ "{n}"),
     digits = all_continuous() ~ 1,
     missing_text = "(Missing)") %>%
-  modify_header(label = "Variable", stat_1 = "Diabetics; n or mean", stat_2 = "Non-diabetics; n or mean") %>%
+  modify_header(label = "Variable", stat_1 = "n_mean_female_d", stat_2 = "n_mean_female_nd") %>%
   modify_footnote(update = everything() ~ NA)
 GCKD_df1_fem_table_1b <-
   GCKD_df1_fem %>%
@@ -144,13 +157,14 @@ GCKD_df1_fem_table_1b <-
   tbl_summary(
     by = diabetes,
     statistic = list(all_continuous() ~ "{sd}",
+                     BL_uacr ~ "{p25}-{p75}",
                      all_categorical() ~ "{p}"),
     digits = ~ 1,
     missing_text = "(Missing)") %>%
   add_ci(statistic=list(all_categorical() ~ "{conf.low}-{conf.high}", all_continuous() ~ "{conf.low}-{conf.high}"),
          style_fun=list(all_categorical() ~ purrr::partial(style_sigfig, digits=3, scale = 100), 
                         all_continuous() ~ purrr::partial(style_sigfig, digits=3))) %>%
-  modify_header(label = "Variable", stat_1 = "Diabetics; SD or %", ci_stat_1 = "Diabetics; 95% CI", stat_2 = "Non-diabetics; SD or %", ci_stat_2 = "Non-diabetics; 95% CI") %>%
+  modify_header(label = "Variable", stat_1 = "perc_female_d", ci_stat_1 = "CI_female_d", stat_2 = "perc_female_nd", ci_stat_2 = "CI_female_nd") %>%
   modify_footnote(update = everything() ~ NA)
 GCKD_df1_fem_table_1 <-
   tbl_merge(tbls = list(GCKD_df1_fem_table_1a, GCKD_df1_fem_table_1b)) %>%
@@ -159,64 +173,38 @@ GCKD_df1_fem_table_1 %>%
   as_gt() %>%
   gt::gtsave(filename = "GCKD_origin_table_1_fem.html", 
              path = path_results)
-### calculated values in Table 1 subset female
-table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_bmi > 30,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="1" & GCKD_df1_fem$BL_ku_bmi > 30, na.rm=TRUE), n=sum(GCKD_df1_fem$diabetes == "1" & !is.na(GCKD_df1_fem$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="2" & GCKD_df1_fem$BL_ku_bmi > 30, na.rm=TRUE), sum(GCKD_df1_fem$diabetes == "2" & !is.na(GCKD_df1_fem$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_bmi <= 30 & GCKD_df1_fem$BL_ku_bmi > 25,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="1" & GCKD_df1_fem$BL_ku_bmi <= 30 & GCKD_df1_fem$BL_ku_bmi > 25, na.rm=TRUE), n=sum(GCKD_df1_fem$diabetes == "1" & !is.na(GCKD_df1_fem$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="2" & GCKD_df1_fem$BL_ku_bmi <= 30 & GCKD_df1_fem$BL_ku_bmi > 25, na.rm=TRUE), sum(GCKD_df1_fem$diabetes == "2" & !is.na(GCKD_df1_fem$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_bmi <= 25,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="1" & GCKD_df1_fem$BL_ku_bmi <= 25, na.rm=TRUE), n=sum(GCKD_df1_fem$diabetes == "1" & !is.na(GCKD_df1_fem$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="2" & GCKD_df1_fem$BL_ku_bmi <= 25, na.rm=TRUE), sum(GCKD_df1_fem$diabetes == "2" & !is.na(GCKD_df1_fem$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_sys < 130 & GCKD_df1_fem$BL_ku_dia < 80,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="1" & GCKD_df1_fem$BL_ku_sys < 130 & GCKD_df1_fem$BL_ku_dia < 80, na.rm=TRUE), n=sum(GCKD_df1_fem$diabetes == "1" & !is.na(GCKD_df1_fem$BL_ku_sys)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="2" & GCKD_df1_fem$BL_ku_sys < 130 & GCKD_df1_fem$BL_ku_dia < 80, na.rm=TRUE), n=sum(GCKD_df1_fem$diabetes == "2" & !is.na(GCKD_df1_fem$BL_ku_sys)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_ku_sys < 140 & GCKD_df1_fem$BL_ku_dia < 90,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="1" & GCKD_df1_fem$BL_ku_sys < 140 & GCKD_df1_fem$BL_ku_dia < 90, na.rm=TRUE), n=sum(GCKD_df1_fem$diabetes == "1" & !is.na(GCKD_df1_fem$BL_ku_sys)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="2" & GCKD_df1_fem$BL_ku_sys < 140 & GCKD_df1_fem$BL_ku_dia < 90, na.rm=TRUE), n=sum(GCKD_df1_fem$diabetes == "2" & !is.na(GCKD_df1_fem$BL_ku_sys)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_gfr_mdrd >= 60,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="1" & GCKD_df1_fem$BL_gfr_mdrd >= 60, na.rm=TRUE), n=sum(GCKD_df1_fem$diabetes =="1" & !is.na(GCKD_df1_fem$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="2" & GCKD_df1_fem$BL_gfr_mdrd >= 60, na.rm=TRUE), n=sum(GCKD_df1_fem$diabetes =="2" & !is.na(GCKD_df1_fem$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_gfr_mdrd >= 45 & GCKD_df1_fem$BL_gfr_mdrd < 60,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="1" & GCKD_df1_fem$BL_gfr_mdrd >= 45 & GCKD_df1_fem$BL_gfr_mdrd < 60, na.rm=TRUE), n=sum(GCKD_df1_fem$diabetes =="1" & !is.na(GCKD_df1_fem$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="2" & GCKD_df1_fem$BL_gfr_mdrd >= 45 & GCKD_df1_fem$BL_gfr_mdrd < 60, na.rm=TRUE), n=sum(GCKD_df1_fem$diabetes =="2" & !is.na(GCKD_df1_fem$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_gfr_mdrd >= 30 & GCKD_df1_fem$BL_gfr_mdrd < 45,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="1" & GCKD_df1_fem$BL_gfr_mdrd >= 30 & GCKD_df1_fem$BL_gfr_mdrd < 45, na.rm=TRUE), n=sum(GCKD_df1_fem$diabetes =="1" & !is.na(GCKD_df1_fem$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="2" & GCKD_df1_fem$BL_gfr_mdrd >= 30 & GCKD_df1_fem$BL_gfr_mdrd < 45, na.rm=TRUE), n=sum(GCKD_df1_fem$diabetes =="2" & !is.na(GCKD_df1_fem$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_gfr_mdrd < 30,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="1" & GCKD_df1_fem$BL_gfr_mdrd < 30, na.rm=TRUE), n=sum(GCKD_df1_fem$diabetes =="1" & !is.na(GCKD_df1_fem$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="2" & GCKD_df1_fem$BL_gfr_mdrd < 30, na.rm=TRUE), n=sum(GCKD_df1_fem$diabetes =="2" & !is.na(GCKD_df1_fem$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-GCKD_df1_fem %>% group_by(diabetes) %>%
-  summarise_at(vars(BL_uacr), list(~ round(quantile(., na.rm=TRUE), 1)))
-GCKD_df1_fem_d <- GCKD_df1_fem %>% subset(diabetes == "1")
-GCKD_df1_fem_nd <- GCKD_df1_fem %>% subset(diabetes == "2")
-MedianCI(GCKD_df1_fem_d$BL_uacr, na.rm=TRUE)
-MedianCI(GCKD_df1_fem_nd$BL_uacr, na.rm=TRUE)
-table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_uacr < 30,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="1" & GCKD_df1_fem$BL_uacr < 30, na.rm=TRUE), n=sum(GCKD_df1_fem$diabetes =="1" & !is.na(GCKD_df1_fem$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="2" & GCKD_df1_fem$BL_uacr < 30, na.rm=TRUE), n=sum(GCKD_df1_fem$diabetes =="2" & !is.na(GCKD_df1_fem$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_uacr >= 30 & GCKD_df1_fem$BL_uacr <= 300,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="1" & GCKD_df1_fem$BL_uacr >= 30 & GCKD_df1_fem$BL_uacr <= 300, na.rm=TRUE), n=sum(GCKD_df1_fem$diabetes =="1" & !is.na(GCKD_df1_fem$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="2" & GCKD_df1_fem$BL_uacr >= 30 & GCKD_df1_fem$BL_uacr <= 300, na.rm=TRUE), n=sum(GCKD_df1_fem$diabetes =="2" & !is.na(GCKD_df1_fem$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_fem$diabetes, GCKD_df1_fem$BL_uacr > 300,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="1" & GCKD_df1_fem$BL_uacr > 300, na.rm=TRUE), n=sum(GCKD_df1_fem$diabetes =="1" & !is.na(GCKD_df1_fem$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_fem$diabetes =="2" & GCKD_df1_fem$BL_uacr > 300, na.rm=TRUE), n=sum(GCKD_df1_fem$diabetes =="2" & !is.na(GCKD_df1_fem$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
+## UACR median CI calculation
+GCKD_df1_fem_d <- GCKD_df1_fem %>% subset(diabetes == "diabetes_yes")
+GCKD_df1_fem_nd <- GCKD_df1_fem %>% subset(diabetes == "diabetes_no")
+UACR_MedCI_fem_d <- MedianCI(GCKD_df1_fem_d$BL_uacr, na.rm=TRUE)
+UACR_CI_low_fem_d <- round(UACR_MedCI_fem_d[2], 1)
+UACR_CI_high_fem_d <-round(UACR_MedCI_fem_d[3], 1)
+UACR_CI_fem_d <- paste(UACR_CI_low_fem_d, UACR_CI_high_fem_d, sep="-")
+UACR_MedCI_fem_nd <- MedianCI(GCKD_df1_fem_nd$BL_uacr, na.rm=TRUE)
+UACR_CI_low_fem_nd <- round(UACR_MedCI_fem_nd[2], 1)
+UACR_CI_high_fem_nd <-round(UACR_MedCI_fem_nd[3], 1)
+UACR_CI_fem_nd <- paste(UACR_CI_low_fem_nd, UACR_CI_high_fem_nd, sep="-")
+### clean and combine data
+GCKD_df1_fem_table_1 <- as_tibble(GCKD_df1_fem_table_1)
+GCKD_df1_fem_table_1$CI_female_d[GCKD_df1_fem_table_1$Variable == "BL_uacr"] <- UACR_CI_fem_d
+GCKD_df1_fem_table_1$CI_female_nd[GCKD_df1_fem_table_1$Variable == "BL_uacr"] <- UACR_CI_fem_nd
+setwd(path_tbl)
+write.xlsx(GCKD_df1_fem_table_1, "tbl1_female_origin.xlsx")
 
 ## Table 1 subset male
 GCKD_df1_male <- GCKD_df1 %>% subset(dem_sex == "Male")
 theme_gtsummary_language("en", big.mark = "")
-table(GCKD_df1_male$diabetes, useNA = "always")
 GCKD_df1_male_table_1a <-
   GCKD_df1_male %>%
   select(all_of(var_table_1)) %>%
   tbl_summary(
-    by = diabetes,
+    by = diabetes,    
     statistic = list(all_continuous() ~ "{mean}",
+                     BL_uacr ~ "{median}",
                      all_categorical() ~ "{n}"),
     digits = all_continuous() ~ 1,
     missing_text = "(Missing)") %>%
-  modify_header(label = "Variable", stat_1 = "Diabetics; n or mean", stat_2 = "Non-diabetics; n or mean") %>%
+  modify_header(label = "Variable", stat_1 = "n_mean_male_d", stat_2 = "n_mean_male_nd") %>%
   modify_footnote(update = everything() ~ NA)
 GCKD_df1_male_table_1b <-
   GCKD_df1_male %>%
@@ -224,13 +212,14 @@ GCKD_df1_male_table_1b <-
   tbl_summary(
     by = diabetes,
     statistic = list(all_continuous() ~ "{sd}",
+                     BL_uacr ~ "{p25}-{p75}",
                      all_categorical() ~ "{p}"),
     digits = ~ 1,
     missing_text = "(Missing)") %>%
   add_ci(statistic=list(all_categorical() ~ "{conf.low}-{conf.high}", all_continuous() ~ "{conf.low}-{conf.high}"),
          style_fun=list(all_categorical() ~ purrr::partial(style_sigfig, digits=3, scale = 100), 
                         all_continuous() ~ purrr::partial(style_sigfig, digits=3))) %>%
-  modify_header(label = "Variable", stat_1 = "Diabetics; SD or %", ci_stat_1 = "Diabetics; 95% CI", stat_2 = "Non-diabetics; SD or %", ci_stat_2 = "Non-diabetics; 95% CI") %>%
+  modify_header(label = "Variable", stat_1 = "perc_male_d", ci_stat_1 = "CI_male_d", stat_2 = "perc_male_nd", ci_stat_2 = "CI_male_nd") %>%
   modify_footnote(update = everything() ~ NA)
 GCKD_df1_male_table_1 <-
   tbl_merge(tbls = list(GCKD_df1_male_table_1a, GCKD_df1_male_table_1b)) %>%
@@ -239,49 +228,33 @@ GCKD_df1_male_table_1 %>%
   as_gt() %>%
   gt::gtsave(filename = "GCKD_origin_table_1_male.html", 
              path = path_results)
-### calculated values in Table 1 subset female
-table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_bmi > 30,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_male$diabetes =="1" & GCKD_df1_male$BL_ku_bmi > 30, na.rm=TRUE), sum(GCKD_df1_male$diabetes == "1" & !is.na(GCKD_df1_male$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_male$diabetes =="2" & GCKD_df1_male$BL_ku_bmi > 30, na.rm=TRUE), sum(GCKD_df1_male$diabetes == "2" & !is.na(GCKD_df1_male$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_bmi <= 30 & GCKD_df1_male$BL_ku_bmi > 25,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_male$diabetes =="1" & GCKD_df1_male$BL_ku_bmi <= 30 & GCKD_df1_male$BL_ku_bmi > 25, na.rm=TRUE), n=sum(GCKD_df1_male$diabetes == "1" & !is.na(GCKD_df1_male$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_male$diabetes =="2" & GCKD_df1_male$BL_ku_bmi <= 30 & GCKD_df1_male$BL_ku_bmi > 25, na.rm=TRUE), sum(GCKD_df1_male$diabetes == "2" & !is.na(GCKD_df1_male$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_bmi <= 25,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_male$diabetes =="1" & GCKD_df1_male$BL_ku_bmi <= 25, na.rm=TRUE), n=sum(GCKD_df1_male$diabetes == "1" & !is.na(GCKD_df1_male$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_male$diabetes =="2" & GCKD_df1_male$BL_ku_bmi <= 25, na.rm=TRUE), sum(GCKD_df1_male$diabetes == "2" & !is.na(GCKD_df1_male$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_sys < 130 & GCKD_df1_male$BL_ku_dia < 80,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_male$diabetes =="1" & GCKD_df1_male$BL_ku_sys < 130 & GCKD_df1_male$BL_ku_dia < 80, na.rm=TRUE), n=sum(GCKD_df1_male$diabetes == "1" & !is.na(GCKD_df1_male$BL_ku_sys)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_male$diabetes =="2" & GCKD_df1_male$BL_ku_sys < 130 & GCKD_df1_male$BL_ku_dia < 80, na.rm=TRUE), n=sum(GCKD_df1_male$diabetes == "2" & !is.na(GCKD_df1_male$BL_ku_sys)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_ku_sys < 140 & GCKD_df1_male$BL_ku_dia < 90,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_male$diabetes =="1" & GCKD_df1_male$BL_ku_sys < 140 & GCKD_df1_male$BL_ku_dia < 90, na.rm=TRUE), n=sum(GCKD_df1_male$diabetes == "1" & !is.na(GCKD_df1_male$BL_ku_sys)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_male$diabetes =="2" & GCKD_df1_male$BL_ku_sys < 140 & GCKD_df1_male$BL_ku_dia < 90, na.rm=TRUE), n=sum(GCKD_df1_male$diabetes == "2" & !is.na(GCKD_df1_male$BL_ku_sys)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_gfr_mdrd >= 60,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_male$diabetes =="1" & GCKD_df1_male$BL_gfr_mdrd >= 60, na.rm=TRUE), n=sum(GCKD_df1_male$diabetes =="1" & !is.na(GCKD_df1_male$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_male$diabetes =="2" & GCKD_df1_male$BL_gfr_mdrd >= 60, na.rm=TRUE), n=sum(GCKD_df1_male$diabetes =="2" & !is.na(GCKD_df1_male$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_gfr_mdrd >= 45 & GCKD_df1_male$BL_gfr_mdrd < 60,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_male$diabetes =="1" & GCKD_df1_male$BL_gfr_mdrd >= 45 & GCKD_df1_male$BL_gfr_mdrd < 60, na.rm=TRUE), n=sum(GCKD_df1_male$diabetes =="1" & !is.na(GCKD_df1_male$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_male$diabetes =="2" & GCKD_df1_male$BL_gfr_mdrd >= 45 & GCKD_df1_male$BL_gfr_mdrd < 60, na.rm=TRUE), n=sum(GCKD_df1_male$diabetes =="2" & !is.na(GCKD_df1_male$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_gfr_mdrd >= 30 & GCKD_df1_male$BL_gfr_mdrd < 45,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_male$diabetes =="1" & GCKD_df1_male$BL_gfr_mdrd >= 30 & GCKD_df1_male$BL_gfr_mdrd < 45, na.rm=TRUE), n=sum(GCKD_df1_male$diabetes =="1" & !is.na(GCKD_df1_male$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_male$diabetes =="2" & GCKD_df1_male$BL_gfr_mdrd >= 30 & GCKD_df1_male$BL_gfr_mdrd < 45, na.rm=TRUE), n=sum(GCKD_df1_male$diabetes =="2" & !is.na(GCKD_df1_male$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_gfr_mdrd < 30,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_male$diabetes =="1" & GCKD_df1_male$BL_gfr_mdrd < 30, na.rm=TRUE), n=sum(GCKD_df1_male$diabetes =="1" & !is.na(GCKD_df1_male$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_male$diabetes =="2" & GCKD_df1_male$BL_gfr_mdrd < 30, na.rm=TRUE), n=sum(GCKD_df1_male$diabetes =="2" & !is.na(GCKD_df1_male$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-GCKD_df1_male %>% group_by(diabetes) %>%
-  summarise_at(vars(BL_uacr), list(~ round(quantile(., na.rm=TRUE), 1)))
-GCKD_df1_male_d <- GCKD_df1_male %>% subset(diabetes == "1")
-GCKD_df1_male_nd <- GCKD_df1_male %>% subset(diabetes == "2")
-MedianCI(GCKD_df1_male_d$BL_uacr, na.rm=TRUE)
-MedianCI(GCKD_df1_male_nd$BL_uacr, na.rm=TRUE)
-table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_uacr < 30,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_male$diabetes =="1" & GCKD_df1_male$BL_uacr < 30, na.rm=TRUE), n=sum(GCKD_df1_male$diabetes =="1" & !is.na(GCKD_df1_male$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_male$diabetes =="2" & GCKD_df1_male$BL_uacr < 30, na.rm=TRUE), n=sum(GCKD_df1_male$diabetes =="2" & !is.na(GCKD_df1_male$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_uacr >= 30 & GCKD_df1_male$BL_uacr <= 300,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_male$diabetes =="1" & GCKD_df1_male$BL_uacr >= 30 & GCKD_df1_male$BL_uacr <= 300, na.rm=TRUE), n=sum(GCKD_df1_male$diabetes =="1" & !is.na(GCKD_df1_male$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_male$diabetes =="2" & GCKD_df1_male$BL_uacr >= 30 & GCKD_df1_male$BL_uacr <= 300, na.rm=TRUE), n=sum(GCKD_df1_male$diabetes =="2" & !is.na(GCKD_df1_male$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_male$diabetes, GCKD_df1_male$BL_uacr > 300,  useNA = "always")
-BinomCI(x=sum(GCKD_df1_male$diabetes =="1" & GCKD_df1_male$BL_uacr > 300, na.rm=TRUE), n=sum(GCKD_df1_male$diabetes =="1" & !is.na(GCKD_df1_male$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_male$diabetes =="2" & GCKD_df1_male$BL_uacr > 300, na.rm=TRUE), n=sum(GCKD_df1_male$diabetes =="2" & !is.na(GCKD_df1_male$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
+## UACR median CI calculation
+GCKD_df1_male_d <- GCKD_df1_male %>% subset(diabetes == "diabetes_yes")
+GCKD_df1_male_nd <- GCKD_df1_male %>% subset(diabetes == "diabetes_no")
+UACR_MedCI_male_d <- MedianCI(GCKD_df1_male_d$BL_uacr, na.rm=TRUE)
+UACR_CI_low_male_d <- round(UACR_MedCI_male_d[2], 1)
+UACR_CI_high_male_d <-round(UACR_MedCI_male_d[3], 1)
+UACR_CI_male_d <- paste(UACR_CI_low_male_d, UACR_CI_high_male_d, sep="-")
+UACR_MedCI_male_nd <- MedianCI(GCKD_df1_male_nd$BL_uacr, na.rm=TRUE)
+UACR_CI_low_male_nd <- round(UACR_MedCI_male_nd[2], 1)
+UACR_CI_high_male_nd <-round(UACR_MedCI_male_nd[3], 1)
+UACR_CI_male_nd <- paste(UACR_CI_low_male_nd, UACR_CI_high_male_nd, sep="-")
+### clean and combine data
+GCKD_df1_male_table_1 <- as_tibble(GCKD_df1_male_table_1)
+GCKD_df1_male_table_1$CI_male_d[GCKD_df1_male_table_1$Variable == "BL_uacr"] <- UACR_CI_male_d
+GCKD_df1_male_table_1$CI_male_nd[GCKD_df1_male_table_1$Variable == "BL_uacr"] <- UACR_CI_male_nd
+setwd(path_tbl)
+write.xlsx(GCKD_df1_male_table_1, "tbl1_male_origin.xlsx")
+
+## Table 1 merge subsets
+tbl1_female_male_origin <- full_join(x = GCKD_df1_male_table_1, y = GCKD_df1_fem_table_1, by = "Variable")
+tbl1_total_female_male_origin <- full_join(x = tbl1_female_male_origin, y = GCKD_df1_table_1, by = "Variable")
+tbl1_origin <- subset(tbl1_total_female_male_origin, !(endsWith(tbl1_total_female_male_origin$Variable, "_no")) & 
+                        tbl1_total_female_male_origin$Variable != "(Missing)" &
+                        tbl1_total_female_male_origin$Variable != "Female" &
+                        (!is.na(tbl1_total_female_male_origin$n_mean_female_d) | !is.na(tbl1_total_female_male_origin$n_mean_male_d)))
+setwd(path_tbl)
+write.xlsx(tbl1_origin, "tbl1_origin.xlsx")
 
 ## Figure 1: KDIGO categories
 BinomCI(x=sum(GCKD_df1$BL_uacr < 30 & GCKD_df1$BL_gfr_mdrd >= 90, na.rm=TRUE), n=sum(!is.na(GCKD_df1$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
@@ -307,7 +280,7 @@ BinomCI(x=sum(GCKD_df1$BL_uacr > 300 & GCKD_df1$BL_gfr_mdrd < 15, na.rm=TRUE), n
 table(GCKD_df1$incl_egfr)
 var_table_2 <- c("BL_age", "dem_sex", "aa_stroke", "aa_myocard", "aa_hypertens", "aa_diabetes", "aa_renal", 
                  "aa_renal_stones", "aa_dialyse", "aa_ntx", "smoking", "diabetes", "BL_creavalue", "BL_cysvalue",
-                 "BL_gfr_mdrd", "biopsy", "ckd_lead", "incl_egfr")
+                 "BL_gfr_mdrd", "BL_uacr", "biopsy", "ckd_lead", "incl_egfr")
 theme_gtsummary_language("en", big.mark = "")
 GCKD_df1_table_2a <-
   GCKD_df1 %>%
@@ -315,10 +288,11 @@ GCKD_df1_table_2a <-
   tbl_summary(
     by = incl_egfr,
     statistic = list(all_continuous() ~ "{mean}",
+                     BL_uacr ~ "{median}", 
                      all_categorical() ~ "{n}"),
     digits = all_continuous() ~ 1,
     missing_text = "(Missing)") %>%
-  modify_header(label = "Variable", stat_1 = "eGFR 30-60; n or mean", stat_2 = "Overt proteinuria; n or mean") %>%
+  modify_header(label = "Variable", stat_1 = "n_mean_egfr", stat_2 = "n_mean_prot") %>%
   modify_footnote(update = everything() ~ NA)
 GCKD_df1_table_2b <-
   GCKD_df1 %>%
@@ -326,13 +300,14 @@ GCKD_df1_table_2b <-
   tbl_summary(
     by = incl_egfr,
     statistic = list(all_continuous() ~ "{sd}",
+                     BL_uacr ~ "{p25}-{p75}",
                      all_categorical() ~ "{p}"),
     digits = ~ 1,
     missing_text = "(Missing)") %>%
   add_ci(statistic=list(all_categorical() ~ "{conf.low}-{conf.high}", all_continuous() ~ "{conf.low}-{conf.high}"),
          style_fun=list(all_categorical() ~ purrr::partial(style_sigfig, digits=3, scale = 100), 
                         all_continuous() ~ purrr::partial(style_sigfig, digits=3))) %>%
-  modify_header(label = "Variable", stat_1 = "eGFR 30-60; SD or %", ci_stat_1 = "eGFR 30-60; 95% CI", stat_2 = "Overt proteinuria; SD or %", ci_stat_2 = "Overt proteinuria; 95% CI") %>%
+  modify_header(label = "Variable", stat_1 = "perc_egfr", ci_stat_1 = "CI_egfr", stat_2 = "perc_prot", ci_stat_2 = "CI_prot") %>%
   modify_footnote(update = everything() ~ NA)
 GCKD_df1_table_2 <-
   tbl_merge(tbls = list(GCKD_df1_table_2a, GCKD_df1_table_2b)) %>%
@@ -341,21 +316,66 @@ GCKD_df1_table_2 %>%
   as_gt() %>%
   gt::gtsave(filename = "GCKD_origin_table_2.html", 
              path = path_results)
-### calculated values in Table 2
+## UACR median CI calculation
+GCKD_df1_gfr <- GCKD_df1 %>% subset(incl_egfr == "egfr")
+GCKD_df1_protein <- GCKD_df1 %>% subset(incl_egfr == "prot")
+UACR_MedCI_egfr <- MedianCI(GCKD_df1_gfr$BL_uacr, na.rm=TRUE)
+UACR_CI_low_egfr <- round(UACR_MedCI_egfr[2], 1)
+UACR_CI_high_egfr <-round(UACR_MedCI_egfr[3], 1)
+UACR_CI_egfr <- paste(UACR_CI_low_egfr, UACR_CI_high_egfr, sep="-")
+UACR_MedCI_prot <- MedianCI(GCKD_df1_protein$BL_uacr, na.rm=TRUE)
+UACR_CI_low_prot <- round(UACR_MedCI_prot[2], 1)
+UACR_CI_high_prot <-round(UACR_MedCI_prot[3], 1)
+UACR_CI_prot <- paste(UACR_CI_low_prot, UACR_CI_high_prot, sep="-")
+## Cardiovasc - age calculations
 GCKD_df1_less60 <- GCKD_df1 %>% subset(GCKD_df1$BL_age <= 60)
-table(GCKD_df1_less60$incl_egfr, GCKD_df1_less60$cardiovasc == "1",  useNA = "always")
-BinomCI(x=sum(GCKD_df1_less60$incl_egfr == "1" & GCKD_df1_less60$cardiovasc == "1", na.rm=TRUE), n=sum(GCKD_df1_less60$incl_egfr == "1" & !is.na(GCKD_df1_less60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_less60$incl_egfr == "2" & GCKD_df1_less60$cardiovasc == "1", na.rm=TRUE), n=sum(GCKD_df1_less60$incl_egfr == "2" & !is.na(GCKD_df1_less60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_less60_yes_egfr <- sum(!is.na(GCKD_df1_less60$cardiovasc) & GCKD_df1_less60$cardiovasc == "cardiovasc_yes" & GCKD_df1_less60$incl_egfr == "egfr")
+cardiovasc_less60_yes_egfr_BinomCI <- BinomCI(x=sum(GCKD_df1_less60$incl_egfr == "egfr" & GCKD_df1_less60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                              n=sum(GCKD_df1_less60$incl_egfr == "egfr" &!is.na(GCKD_df1_less60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_less60_yes_perc_egfr <-round(cardiovasc_less60_yes_egfr_BinomCI[1], 1)
+cardiovasc_less60_yes_CI_low_egfr <- round(cardiovasc_less60_yes_egfr_BinomCI[2], 1)
+cardiovasc_less60_yes_CI_high_egfr <-round(cardiovasc_less60_yes_egfr_BinomCI[3], 1)
+cardiovasc_less60_yes_CI_egfr <- paste(cardiovasc_less60_yes_CI_low_egfr, cardiovasc_less60_yes_CI_high_egfr, sep="-")
+cardiovasc_less60_yes_prot <- sum(!is.na(GCKD_df1_less60$cardiovasc) & GCKD_df1_less60$cardiovasc == "cardiovasc_yes" & GCKD_df1_less60$incl_egfr == "prot")
+cardiovasc_less60_yes_prot_BinomCI <- BinomCI(x=sum(GCKD_df1_less60$incl_egfr == "prot" & GCKD_df1_less60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                              n=sum(GCKD_df1_less60$incl_egfr == "prot" & !is.na(GCKD_df1_less60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_less60_yes_perc_prot <-round(cardiovasc_less60_yes_prot_BinomCI[1], 1)
+cardiovasc_less60_yes_CI_low_prot <- round(cardiovasc_less60_yes_prot_BinomCI[2], 1)
+cardiovasc_less60_yes_CI_high_prot <-round(cardiovasc_less60_yes_prot_BinomCI[3], 1)
+cardiovasc_less60_yes_CI_prot <- paste(cardiovasc_less60_yes_CI_low_prot, cardiovasc_less60_yes_CI_high_prot, sep="-")
 GCKD_df1_more60 <- GCKD_df1 %>% subset(GCKD_df1$BL_age > 60)
-table(GCKD_df1_more60$incl_egfr, GCKD_df1_more60$cardiovasc == "1",  useNA = "always") 
-BinomCI(x=sum(GCKD_df1_more60$incl_egfr == "1" & GCKD_df1_more60$cardiovasc == "1", na.rm=TRUE), n=sum(GCKD_df1_more60$incl_egfr == "1" & !is.na(GCKD_df1_more60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_more60$incl_egfr == "2" & GCKD_df1_more60$cardiovasc == "1", na.rm=TRUE), n=sum(GCKD_df1_more60$incl_egfr == "2" & !is.na(GCKD_df1_more60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
-GCKD_df1 %>% group_by(incl_egfr) %>%
-  summarise_at(vars(BL_uacr), list(~ round(quantile(., na.rm=TRUE), 1)))
-GCKD_df1_gfr <- GCKD_df1 %>% subset(incl_egfr == "1")
-GCKD_df1_protein <- GCKD_df1 %>% subset(incl_egfr == "2")
-MedianCI(GCKD_df1_gfr$BL_uacr, na.rm=TRUE)
-MedianCI(GCKD_df1_protein$BL_uacr, na.rm=TRUE)
+cardiovasc_more60_yes_egfr <- sum(!is.na(GCKD_df1_more60$cardiovasc) & GCKD_df1_more60$cardiovasc == "cardiovasc_yes" & GCKD_df1_more60$incl_egfr == "egfr")
+cardiovasc_more60_yes_egfr_BinomCI <- BinomCI(x=sum(GCKD_df1_more60$incl_egfr == "egfr" & GCKD_df1_more60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                              n=sum(GCKD_df1_more60$incl_egfr == "egfr" &!is.na(GCKD_df1_more60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_more60_yes_perc_egfr <-round(cardiovasc_more60_yes_egfr_BinomCI[1], 1)
+cardiovasc_more60_yes_CI_low_egfr <- round(cardiovasc_more60_yes_egfr_BinomCI[2], 1)
+cardiovasc_more60_yes_CI_high_egfr <-round(cardiovasc_more60_yes_egfr_BinomCI[3], 1)
+cardiovasc_more60_yes_CI_egfr <- paste(cardiovasc_more60_yes_CI_low_egfr, cardiovasc_more60_yes_CI_high_egfr, sep="-")
+cardiovasc_more60_yes_prot <- sum(!is.na(GCKD_df1_more60$cardiovasc) & GCKD_df1_more60$cardiovasc == "cardiovasc_yes" & GCKD_df1_more60$incl_egfr == "prot")
+cardiovasc_more60_yes_prot_BinomCI <- BinomCI(x=sum(GCKD_df1_more60$incl_egfr == "prot" & GCKD_df1_more60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                              n=sum(GCKD_df1_more60$incl_egfr == "prot" & !is.na(GCKD_df1_more60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_more60_yes_perc_prot <-round(cardiovasc_more60_yes_prot_BinomCI[1], 1)
+cardiovasc_more60_yes_CI_low_prot <- round(cardiovasc_more60_yes_prot_BinomCI[2], 1)
+cardiovasc_more60_yes_CI_high_prot <-round(cardiovasc_more60_yes_prot_BinomCI[3], 1)
+cardiovasc_more60_yes_CI_prot <- paste(cardiovasc_more60_yes_CI_low_prot, cardiovasc_more60_yes_CI_high_prot, sep="-")
+### clean and combine data
+GCKD_df1_table_2 <- as_tibble(GCKD_df1_table_2)
+GCKD_df1_table_2$CI_egfr[GCKD_df1_table_2$Variable == "BL_uacr"] <- UACR_CI_egfr
+GCKD_df1_table_2$CI_prot[GCKD_df1_table_2$Variable == "BL_uacr"] <- UACR_CI_prot
+Cardiovasc_less60_yes <- c("cardiovasc_less60_yes", cardiovasc_less60_yes_egfr, cardiovasc_less60_yes_prot, cardiovasc_less60_yes_perc_egfr, cardiovasc_less60_yes_CI_egfr, 
+                           cardiovasc_less60_yes_perc_prot, cardiovasc_less60_yes_CI_prot)
+Cardiovasc_more60_yes <- c("cardiovasc_more60_yes", cardiovasc_more60_yes_egfr, cardiovasc_more60_yes_prot, cardiovasc_more60_yes_perc_egfr, cardiovasc_more60_yes_CI_egfr, 
+                           cardiovasc_more60_yes_perc_prot, cardiovasc_more60_yes_CI_prot)
+tbl2_cardiovasc_less60 <- rbind(GCKD_df1_table_2, Cardiovasc_less60_yes)
+tbl2_cardiovasc_60 <- rbind(tbl2_cardiovasc_less60, Cardiovasc_more60_yes)
+tbl2_origin <- subset(tbl2_cardiovasc_60, !(endsWith(tbl2_cardiovasc_60$Variable, "_no")) & 
+                        tbl2_cardiovasc_60$Variable != "(Missing)" &
+                        tbl2_cardiovasc_60$Variable != "Female" &
+                        (!is.na(tbl2_cardiovasc_60$n_mean_egfr) | !is.na(tbl2_cardiovasc_60$n_mean_prot)))
+
+setwd(path_tbl)
+write.xlsx(tbl2_origin, "tbl2_origin.xlsx")
+
 
 ## Figure 2: Leading causes of CKD
 Fig2_vasc = c(sum(GCKD_df1$ckd_vasc == 1), sum(GCKD_df1$ckd_lead == "ckd_vask"))
@@ -410,38 +430,40 @@ BinomCI(x=sum(GCKD_df1$hypertension == "1" & GCKD_df1$ckd_lead == "ckd_oth", na.
 BinomCI(x=sum(GCKD_df1$hypertension == "1" & GCKD_df1$ckd_lead == "ckd_lead_uk", na.rm=TRUE), n=sum(GCKD_df1$ckd_lead == "ckd_lead_uk" & !is.na(GCKD_df1$ckd_lead)), method="wilson") %>% '*'(100) %>% round(1)
 
 ## Table 3: Causes of CKD leading & additional
-GCKD_df1 <- GCKD_df1 %>% mutate(ckd_add_diab = ifelse(GCKD_df1$ckd_lead == "ckd_diab", "2", ifelse(GCKD_df1$ckd_diab == "1", "1", "2")))
-GCKD_df1 <- GCKD_df1 %>% mutate(ckd_add_vask = ifelse(GCKD_df1$ckd_lead == "ckd_vask", "2", ifelse(GCKD_df1$ckd_vasc == "1", "1", "2")))
-GCKD_df1 <- GCKD_df1 %>% mutate(ckd_add_syst = ifelse(GCKD_df1$ckd_lead == "ckd_syst", "2", ifelse(GCKD_df1$ckd_syst == "1", "1", "2")))
-GCKD_df1 <- GCKD_df1 %>% mutate(ckd_add_glom_prim = ifelse(GCKD_df1$ckd_lead == "ckd_glom_prim", "2", ifelse(GCKD_df1$ckd_glom_prim == "1", "1", "2")))
-GCKD_df1 <- GCKD_df1 %>% mutate(ckd_add_interst = ifelse(GCKD_df1$ckd_lead == "ckd_interst", "2", ifelse(GCKD_df1$ckd_interst == "1", "1", "2")))
-GCKD_df1 <- GCKD_df1 %>% mutate(ckd_add_aki = ifelse(GCKD_df1$ckd_lead == "ckd_aki", "2", ifelse(GCKD_df1$ckd_aki == "1", "1", "2")))
-GCKD_df1 <- GCKD_df1 %>% mutate(ckd_add_single = ifelse(GCKD_df1$ckd_lead == "ckd_single", "2", ifelse(GCKD_df1$ckd_single == "1", "1", "2")))
-GCKD_df1 <- GCKD_df1 %>% mutate(ckd_add_heredit = ifelse(GCKD_df1$ckd_lead == "ckd_heredit", "2", ifelse(GCKD_df1$ckd_heredit == "1", "1", "2")))
-GCKD_df1 <- GCKD_df1 %>% mutate(ckd_add_obstr = ifelse(GCKD_df1$ckd_lead == "ckd_obstr", "2", ifelse(GCKD_df1$ckd_obstr == "1", "1", "2")))
-GCKD_df1 <- GCKD_df1 %>% mutate(ckd_add_oth = ifelse(GCKD_df1$ckd_lead == "ckd_oth", "2", ifelse(GCKD_df1$ckd_oth == "1", "1", "2")))
+GCKD_df1 <- GCKD_df1 %>% mutate(ckd_add_diab = ifelse(GCKD_df1$ckd_lead == "ckd_diab", "ckd_add_diab_no", ifelse(GCKD_df1$ckd_diab == "1", "ckd_add_diab_yes", "ckd_add_diab_no")))
+GCKD_df1 <- GCKD_df1 %>% mutate(ckd_add_vask = ifelse(GCKD_df1$ckd_lead == "ckd_vask", "ckd_add_vask_no", ifelse(GCKD_df1$ckd_vasc == "1", "ckd_add_vask_yes", "ckd_add_vask_no")))
+GCKD_df1 <- GCKD_df1 %>% mutate(ckd_add_syst = ifelse(GCKD_df1$ckd_lead == "ckd_syst", "ckd_add_syst_no", ifelse(GCKD_df1$ckd_syst == "1", "ckd_add_syst_yes", "ckd_add_syst_no")))
+GCKD_df1 <- GCKD_df1 %>% mutate(ckd_add_glom_prim = ifelse(GCKD_df1$ckd_lead == "ckd_glom_prim", "ckd_add_glom_prim_no", ifelse(GCKD_df1$ckd_glom_prim == "1", "ckd_add_glom_prim_yes", "ckd_add_glom_prim_no")))
+GCKD_df1 <- GCKD_df1 %>% mutate(ckd_add_interst = ifelse(GCKD_df1$ckd_lead == "ckd_interst", "ckd_add_interst_no", ifelse(GCKD_df1$ckd_interst == "1", "ckd_add_interst_yes", "ckd_add_interst_no")))
+GCKD_df1 <- GCKD_df1 %>% mutate(ckd_add_aki = ifelse(GCKD_df1$ckd_lead == "ckd_aki", "ckd_add_aki_no", ifelse(GCKD_df1$ckd_aki == "1", "ckd_add_aki_yes", "ckd_add_aki_no")))
+GCKD_df1 <- GCKD_df1 %>% mutate(ckd_add_single = ifelse(GCKD_df1$ckd_lead == "ckd_single", "ckd_add_single_no", ifelse(GCKD_df1$ckd_single == "1", "ckd_add_single_yes", "ckd_add_single_no")))
+GCKD_df1 <- GCKD_df1 %>% mutate(ckd_add_heredit = ifelse(GCKD_df1$ckd_lead == "ckd_heredit", "ckd_add_heredit_no", ifelse(GCKD_df1$ckd_heredit == "1", "ckd_add_heredit_yes", "ckd_add_heredit_no")))
+GCKD_df1 <- GCKD_df1 %>% mutate(ckd_add_obstr = ifelse(GCKD_df1$ckd_lead == "ckd_obstr", "ckd_add_obstr_no", ifelse(GCKD_df1$ckd_obstr == "1", "ckd_add_obstr_yes", "ckd_add_obstr_no")))
+GCKD_df1 <- GCKD_df1 %>% mutate(ckd_add_oth = ifelse(GCKD_df1$ckd_lead == "ckd_oth", "ckd_add_oth_no", ifelse(GCKD_df1$ckd_oth == "1", "ckd_add_oth_yes", "ckd_add_oth_no")))
 GCKD_df1 <- GCKD_df1 %>% mutate(ckd_add = ifelse(ckd_add_diab == "1" | ckd_add_vask == "1" | ckd_add_syst == "1" | ckd_add_glom_prim == "1" | ckd_add_interst == "1" | ckd_add_aki == "1" | 
-                                                   ckd_add_single == "1" | ckd_add_heredit == "1" | ckd_add_obstr == "1" | ckd_add_oth == "1", "1", 
+                                                   ckd_add_single == "1" | ckd_add_heredit == "1" | ckd_add_obstr == "1" | ckd_add_oth == "1", "ckd_add_yes", 
                                                  ifelse(ckd_add_diab == "2" & ckd_add_vask == "2" & ckd_add_syst == "2" & ckd_add_glom_prim == "2" & ckd_add_interst == "2" & 
-                                                          ckd_add_aki == "2" & ckd_add_single == "2" & ckd_add_heredit == "2" & ckd_add_obstr == "2" & ckd_add_oth == "2", "2", "ckd_add_uk")))
+                                                          ckd_add_aki == "2" & ckd_add_single == "2" & ckd_add_heredit == "2" & ckd_add_obstr == "2" & ckd_add_oth == "2", "ckd_add_no", "ckd_add_uk")))
 table(GCKD_df1$ckd_lead, useNA = "always")
 prop.table(table(GCKD_df1$ckd_lead)) %>% '*'(100) %>% round(1)
 MultinomCI(table(GCKD_df1$ckd_lead), method="wilson") %>% '*'(100) %>% round(1)
 var_table_3 <- c("ckd_lead", "ckd_add_diab", "ckd_add_vask", "ckd_add_syst", "ckd_add_glom_prim", "ckd_add_interst", 
                  "ckd_add_aki", "ckd_add_single", "ckd_add_heredit", "ckd_add_obstr", "ckd_add_oth", "ckd_add", "ckd_uk", "biopsy")
+var_table_3_red <- c("ckd_lead", "biopsy")
 theme_gtsummary_language("en", big.mark = "")
 GCKD_df1_table_3a <-
   GCKD_df1 %>%
-  select(all_of(var_table_3)) %>%
+  select(all_of(var_table_3_red)) %>%
   tbl_summary(
     by = ckd_lead,
     statistic = list(all_categorical() ~ "{n}"),
     missing_text = "(Missing)") %>%
-  modify_header(label = "Variable") %>%
+  modify_header(modify_header(
+    label = "Variable")) %>%
   modify_footnote(update = everything() ~ NA)
 GCKD_df1_table_3b <-
   GCKD_df1 %>%
-  select(all_of(var_table_3)) %>%
+  select(all_of(var_table_3_red)) %>%
   tbl_summary(
     by = ckd_lead,
     statistic = list(all_categorical() ~ "{p}"),
@@ -450,7 +472,30 @@ GCKD_df1_table_3b <-
   add_ci(statistic=list(all_categorical() ~ "{conf.low}-{conf.high}", all_continuous() ~ "{conf.low}-{conf.high}"),
          style_fun=list(all_categorical() ~ purrr::partial(style_sigfig, digits=3, scale = 100), 
                         all_continuous() ~ purrr::partial(style_sigfig, digits=3))) %>%
-  modify_header(label = "Variable") %>%
+  modify_header(
+    label = "Variable",
+    stat_1 = "perc_ckd_diab",
+    ci_stat_1 = "CI_ckd_diab",
+    stat_10 = "perc_ckd_oth",
+    ci_stat_10 = "CI_ckd_oth",
+    stat_11 = "perc_ckd_lead_uk",
+    ci_stat_11 = "CI_ckd_lead_uk",
+    stat_2 = "perc_ckd_vask",
+    ci_stat_2 = "CI_ckd_vask",
+    stat_3 = "perc_ckd_syst",
+    ci_stat_3 = "CI_ckd_syst",
+    stat_4 = "perc_ckd_glom_prim",
+    ci_stat_4 = "CI_ckd_glom_prim",
+    stat_5 = "perc_ckd_interst",
+    ci_stat_5 = "CI_ckd_interst",
+    stat_6 = "perc_ckd_aki",
+    ci_stat_6 = "CI_ckd_aki",
+    stat_7 = "perc_ckd_single",
+    ci_stat_7 = "CI_ckd_single",
+    stat_8 = "perc_ckd_heredit",
+    ci_stat_8 = "CI_ckd_heredit",
+    stat_9 = "perc_ckd_obstr",
+    ci_stat_9 = "CI_ckd_obstr") %>%
   modify_footnote(update = everything() ~ NA)
 GCKD_df1_table_3 <-
   tbl_merge(tbls = list(GCKD_df1_table_3a, GCKD_df1_table_3b)) %>%
@@ -459,6 +504,9 @@ GCKD_df1_table_3 %>%
   as_gt() %>%
   gt::gtsave(filename = "GCKD_origin_table_3.html", 
              path = path_results)
+GCKD_df1_table_3b <- as_tibble(GCKD_df1_table_3b)
+setwd(path_results)
+write.xlsx(GCKD_df1_table_3b, "tbl3_origin.xlsx")
 
 ## Figure 3: Patient awareness and treatment
 Fig3_6mo = c(sum(GCKD_df1$awareness == "< 6 mo", na.rm = TRUE), sum(GCKD_df1$treatment == "< 6 mo", na.rm = TRUE))
@@ -493,7 +541,7 @@ GCKD_df1_table_4a <-
   tbl_summary(
     statistic = list(all_categorical() ~ "{n}"),
     missing_text = "(Missing)") %>%
-  modify_header(label = "Variable", stat_0 = "n") %>%
+  modify_header(label = "Variable", stat_0 = "n_total") %>%
   modify_footnote(update = everything() ~ NA)
 GCKD_df1_table_4b <-
   GCKD_df1 %>%
@@ -505,7 +553,7 @@ GCKD_df1_table_4b <-
   add_ci(statistic=list(all_categorical() ~ "{conf.low}-{conf.high}", all_continuous() ~ "{conf.low}-{conf.high}"),
          style_fun=list(all_categorical() ~ purrr::partial(style_sigfig, digits=3, scale = 100), 
                         all_continuous() ~ purrr::partial(style_sigfig, digits=3))) %>%
-  modify_header(label = "Variable", stat_0 = "%") %>%
+  modify_header(label = "Variable", stat_0 = "perc_total", ci_stat_0 = "CI_total") %>%
   modify_footnote(update = everything() ~ NA)
 GCKD_df1_table_4 <-
   tbl_merge(tbls = list(GCKD_df1_table_4a, GCKD_df1_table_4b)) %>%
@@ -514,13 +562,30 @@ GCKD_df1_table_4 %>%
   as_gt() %>%
   gt::gtsave(filename = "GCKD_origin_table_4.html", 
              path = path_results)
-### calculated values in Table 4
+### Cardiovasc - age calculations
 GCKD_df1_less60 <- GCKD_df1 %>% subset(GCKD_df1$BL_age <= 60)
-table(GCKD_df1_less60$cardiovasc == "1",  useNA = "always") 
-BinomCI(x=sum(GCKD_df1_less60$cardiovasc == "1", na.rm=TRUE), n=sum(!is.na(GCKD_df1_less60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_less60_yes <- sum(!is.na(GCKD_df1_less60$cardiovasc) & GCKD_df1_less60$cardiovasc == "cardiovasc_yes")
+cardiovasc_less60_yes_BinomCI <- BinomCI(x=sum(GCKD_df1_less60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                         n=sum(!is.na(GCKD_df1_less60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_less60_yes_perc <-round(cardiovasc_less60_yes_BinomCI[1], 1)
+cardiovasc_less60_yes_CI_low <- round(cardiovasc_less60_yes_BinomCI[2], 1)
+cardiovasc_less60_yes_CI_high <-round(cardiovasc_less60_yes_BinomCI[3], 1)
+cardiovasc_less60_yes_CI <- paste(cardiovasc_less60_yes_CI_low, cardiovasc_less60_yes_CI_high, sep="-")
 GCKD_df1_more60 <- GCKD_df1 %>% subset(GCKD_df1$BL_age > 60)
-table(GCKD_df1_more60$cardiovasc == "1",  useNA = "always")
-BinomCI(x=sum(GCKD_df1_more60$cardiovasc == "1", na.rm=TRUE), n=sum(!is.na(GCKD_df1_more60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_more60_yes <- sum(!is.na(GCKD_df1_more60$cardiovasc) & GCKD_df1_more60$cardiovasc == "cardiovasc_yes")
+cardiovasc_more60_yes_BinomCI <- BinomCI(x=sum(GCKD_df1_more60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                         n=sum(!is.na(GCKD_df1_more60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_more60_yes_perc <-round(cardiovasc_more60_yes_BinomCI[1], 1)
+cardiovasc_more60_yes_CI_low <- round(cardiovasc_more60_yes_BinomCI[2], 1)
+cardiovasc_more60_yes_CI_high <-round(cardiovasc_more60_yes_BinomCI[3], 1)
+cardiovasc_more60_yes_CI <- paste(cardiovasc_more60_yes_CI_low, cardiovasc_more60_yes_CI_high, sep="-")
+Cardiovasc_less60_yes <- c("cardiovasc_less60_yes", cardiovasc_less60_yes, cardiovasc_less60_yes_perc, cardiovasc_less60_yes_CI)
+Cardiovasc_more60_yes <- c("cardiovasc_more60_yes", cardiovasc_more60_yes, cardiovasc_more60_yes_perc, cardiovasc_more60_yes_CI)
+GCKD_df1_table_4 <- as_tibble(GCKD_df1_table_4)
+tbl4_cardiovasc_less60 <- rbind(GCKD_df1_table_4, Cardiovasc_less60_yes)
+tbl4_cardiovasc_60 <- rbind(tbl4_cardiovasc_less60, Cardiovasc_more60_yes)
+setwd(path_tbl)
+write.xlsx(tbl4_cardiovasc_60, "tbl4_total_origin.xlsx")
 
 ## Table 4 subset female
 GCKD_df1_fem <- GCKD_df1 %>% subset(dem_sex == "Female")
@@ -532,7 +597,7 @@ GCKD_df1_fem_table_4a <-
     by = diabetes,
     statistic = list(all_categorical() ~ "{n}"),
     missing_text = "(Missing)") %>%
-  modify_header(label = "Variable", stat_1 = "Diabetics; n or mean", stat_2 = "Non-diabetics; n or mean") %>%
+  modify_header(label = "Variable", stat_1 = "n_female_d", stat_2 = "n_female_nd") %>%
   modify_footnote(update = everything() ~ NA)
 GCKD_df1_fem_table_4b <-
   GCKD_df1_fem %>%
@@ -545,7 +610,7 @@ GCKD_df1_fem_table_4b <-
   add_ci(statistic=list(all_categorical() ~ "{conf.low}-{conf.high}", all_continuous() ~ "{conf.low}-{conf.high}"),
          style_fun=list(all_categorical() ~ purrr::partial(style_sigfig, digits=3, scale = 100), 
                         all_continuous() ~ purrr::partial(style_sigfig, digits=3))) %>%
-  modify_header(label = "Variable", stat_1 = "Diabetics; %", ci_stat_1 = "Diabetics; 95% CI", stat_2 = "Non-diabetics; %", ci_stat_2 = "Non-diabetics; 95% CI") %>%
+  modify_header(label = "Variable", stat_1 = "perc_female_d", ci_stat_1 = "CI_female_d", stat_2 = "perc_female_nd", ci_stat_2 = "CI_female_nd") %>%
   modify_footnote(update = everything() ~ NA)
 GCKD_df1_fem_table_4 <-
   tbl_merge(tbls = list(GCKD_df1_fem_table_4a, GCKD_df1_fem_table_4b)) %>%
@@ -554,15 +619,47 @@ GCKD_df1_fem_table_4 %>%
   as_gt() %>%
   gt::gtsave(filename = "GCKD_origin_table_4_fem.html", 
              path = path_results)
-### calculated values in Table 4 subset female
+### Cardiovasc - age calculations
 GCKD_df1_fem_less60 <- GCKD_df1_fem %>% subset(GCKD_df1_fem$BL_age <= 60)
-table(GCKD_df1_fem_less60$diabetes, GCKD_df1_fem_less60$cardiovasc == 1,  useNA = "always")  
-BinomCI(x=sum(GCKD_df1_fem_less60$diabetes == "1" & GCKD_df1_fem_less60$cardiovasc == "1", na.rm=TRUE), n=sum(GCKD_df1_fem_less60$diabetes == "1" & !is.na(GCKD_df1_fem_less60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_fem_less60$diabetes == "2" & GCKD_df1_fem_less60$cardiovasc == "1", na.rm=TRUE), n=sum(GCKD_df1_fem_less60$diabetes == "2" & !is.na(GCKD_df1_fem_less60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_less60_yes_d <- sum(!is.na(GCKD_df1_fem_less60$cardiovasc) & GCKD_df1_fem_less60$cardiovasc == "cardiovasc_yes" & GCKD_df1_fem_less60$diabetes == "diabetes_yes")
+cardiovasc_less60_yes_d_BinomCI <- BinomCI(x=sum(GCKD_df1_fem_less60$diabetes == "diabetes_yes" & GCKD_df1_fem_less60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                           n=sum(GCKD_df1_fem_less60$diabetes == "diabetes_yes" &!is.na(GCKD_df1_fem_less60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_less60_yes_perc_d <-round(cardiovasc_less60_yes_d_BinomCI[1], 1)
+cardiovasc_less60_yes_CI_low_d <- round(cardiovasc_less60_yes_d_BinomCI[2], 1)
+cardiovasc_less60_yes_CI_high_d <-round(cardiovasc_less60_yes_d_BinomCI[3], 1)
+cardiovasc_less60_yes_CI_d <- paste(cardiovasc_less60_yes_CI_low_d, cardiovasc_less60_yes_CI_high_d, sep="-")
+cardiovasc_less60_yes_nd <- sum(!is.na(GCKD_df1_fem_less60$cardiovasc) & GCKD_df1_fem_less60$cardiovasc == "cardiovasc_yes" & GCKD_df1_fem_less60$diabetes == "diabetes_no")
+cardiovasc_less60_yes_nd_BinomCI <- BinomCI(x=sum(GCKD_df1_fem_less60$diabetes == "diabetes_no" & GCKD_df1_fem_less60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                            n=sum(GCKD_df1_fem_less60$diabetes == "diabetes_no" & !is.na(GCKD_df1_fem_less60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_less60_yes_perc_nd <-round(cardiovasc_less60_yes_nd_BinomCI[1], 1)
+cardiovasc_less60_yes_CI_low_nd <- round(cardiovasc_less60_yes_nd_BinomCI[2], 1)
+cardiovasc_less60_yes_CI_high_nd <-round(cardiovasc_less60_yes_nd_BinomCI[3], 1)
+cardiovasc_less60_yes_CI_nd <- paste(cardiovasc_less60_yes_CI_low_nd, cardiovasc_less60_yes_CI_high_nd, sep="-")
 GCKD_df1_fem_more60 <- GCKD_df1_fem %>% subset(GCKD_df1_fem$BL_age > 60)
-table(GCKD_df1_fem_more60$diabetes, GCKD_df1_fem_more60$cardiovasc == 1,  useNA = "always")  
-BinomCI(x=sum(GCKD_df1_fem_more60$diabetes == "1" & GCKD_df1_fem_more60$cardiovasc == "1", na.rm=TRUE), n=sum(GCKD_df1_fem_more60$diabetes == "1" & !is.na(GCKD_df1_fem_more60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_fem_more60$diabetes == "2" & GCKD_df1_fem_more60$cardiovasc == "1", na.rm=TRUE), n=sum(GCKD_df1_fem_more60$diabetes == "2" & !is.na(GCKD_df1_fem_more60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_more60_yes_d <- sum(!is.na(GCKD_df1_fem_more60$cardiovasc) & GCKD_df1_fem_more60$cardiovasc == "cardiovasc_yes" & GCKD_df1_fem_more60$diabetes == "diabetes_yes")
+cardiovasc_more60_yes_d_BinomCI <- BinomCI(x=sum(GCKD_df1_fem_more60$diabetes == "diabetes_yes" & GCKD_df1_fem_more60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                           n=sum(GCKD_df1_fem_more60$diabetes == "diabetes_yes" &!is.na(GCKD_df1_fem_more60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_more60_yes_perc_d <-round(cardiovasc_more60_yes_d_BinomCI[1], 1)
+cardiovasc_more60_yes_CI_low_d <- round(cardiovasc_more60_yes_d_BinomCI[2], 1)
+cardiovasc_more60_yes_CI_high_d <-round(cardiovasc_more60_yes_d_BinomCI[3], 1)
+cardiovasc_more60_yes_CI_d <- paste(cardiovasc_more60_yes_CI_low_d, cardiovasc_more60_yes_CI_high_d, sep="-")
+cardiovasc_more60_yes_nd <- sum(!is.na(GCKD_df1_fem_more60$cardiovasc) & GCKD_df1_fem_more60$cardiovasc == "cardiovasc_yes" & GCKD_df1_fem_more60$diabetes == "diabetes_no")
+cardiovasc_more60_yes_nd_BinomCI <- BinomCI(x=sum(GCKD_df1_fem_more60$diabetes == "diabetes_no" & GCKD_df1_fem_more60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                            n=sum(GCKD_df1_fem_more60$diabetes == "diabetes_no" & !is.na(GCKD_df1_fem_more60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_more60_yes_perc_nd <-round(cardiovasc_more60_yes_nd_BinomCI[1], 1)
+cardiovasc_more60_yes_CI_low_nd <- round(cardiovasc_more60_yes_nd_BinomCI[2], 1)
+cardiovasc_more60_yes_CI_high_nd <-round(cardiovasc_more60_yes_nd_BinomCI[3], 1)
+cardiovasc_more60_yes_CI_nd <- paste(cardiovasc_more60_yes_CI_low_nd, cardiovasc_more60_yes_CI_high_nd, sep="-")
+### clean and combine data
+GCKD_df1_fem_table_4 <- as_tibble(GCKD_df1_fem_table_4)
+Cardiovasc_less60_yes <- c("cardiovasc_less60_yes", cardiovasc_less60_yes_d, cardiovasc_less60_yes_nd, cardiovasc_less60_yes_perc_d, cardiovasc_less60_yes_CI_d, 
+                           cardiovasc_less60_yes_perc_nd, cardiovasc_less60_yes_CI_nd)
+Cardiovasc_more60_yes <- c("cardiovasc_more60_yes", cardiovasc_more60_yes_d, cardiovasc_more60_yes_nd, cardiovasc_more60_yes_perc_d, cardiovasc_more60_yes_CI_d, 
+                           cardiovasc_more60_yes_perc_nd, cardiovasc_more60_yes_CI_nd)
+tbl4_cardiovasc_less60_fem <- rbind(GCKD_df1_fem_table_4, Cardiovasc_less60_yes)
+tbl4_cardiovasc_60_fem <- rbind(tbl4_cardiovasc_less60_fem, Cardiovasc_more60_yes)
+setwd(path_tbl)
+write.xlsx(tbl4_cardiovasc_60_fem, "tbl4_female_origin.xlsx")
 
 ## Table 4 subset male
 GCKD_df1_male <- GCKD_df1 %>% subset(dem_sex == "Male")
@@ -574,7 +671,7 @@ GCKD_df1_male_table_4a <-
     by = diabetes,
     statistic = list(all_categorical() ~ "{n}"),
     missing_text = "(Missing)") %>%
-  modify_header(label = "Variable", stat_1 = "Diabetics; n or mean", stat_2 = "Non-diabetics; n or mean") %>%
+  modify_header(label = "Variable", stat_1 = "n_male_d", stat_2 = "n_male_nd") %>%
   modify_footnote(update = everything() ~ NA)
 GCKD_df1_male_table_4b <-
   GCKD_df1_male %>%
@@ -587,7 +684,7 @@ GCKD_df1_male_table_4b <-
   add_ci(statistic=list(all_categorical() ~ "{conf.low}-{conf.high}", all_continuous() ~ "{conf.low}-{conf.high}"),
          style_fun=list(all_categorical() ~ purrr::partial(style_sigfig, digits=3, scale = 100), 
                         all_continuous() ~ purrr::partial(style_sigfig, digits=3))) %>%
-  modify_header(label = "Variable", stat_1 = "Diabetics; %", ci_stat_1 = "Diabetics; 95% CI", stat_2 = "Non-diabetics; %", ci_stat_2 = "Non-diabetics; 95% CI") %>%
+  modify_header(label = "Variable", stat_1 = "perc_male_d", ci_stat_1 = "CI_male_d", stat_2 = "perc_male_nd", ci_stat_2 = "CI_male_nd") %>%
   modify_footnote(update = everything() ~ NA)
 GCKD_df1_male_table_4 <-
   tbl_merge(tbls = list(GCKD_df1_male_table_4a, GCKD_df1_male_table_4b)) %>%
@@ -596,15 +693,57 @@ GCKD_df1_male_table_4 %>%
   as_gt() %>%
   gt::gtsave(filename = "GCKD_origin_table_4_male.html", 
              path = path_results)
-### calculated values in Table 4 subset male
+### Cardiovasc - age calculations
 GCKD_df1_male_less60 <- GCKD_df1_male %>% subset(GCKD_df1_male$BL_age <= 60)
-table(GCKD_df1_male_less60$diabetes, GCKD_df1_male_less60$cardiovasc == 1,  useNA = "always")  
-BinomCI(x=sum(GCKD_df1_male_less60$diabetes == "1" & GCKD_df1_male_less60$cardiovasc == "1", na.rm=TRUE), n=sum(GCKD_df1_male_less60$diabetes == "1" & !is.na(GCKD_df1_male_less60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_male_less60$diabetes == "2" & GCKD_df1_male_less60$cardiovasc == "1", na.rm=TRUE), n=sum(GCKD_df1_male_less60$diabetes == "2" & !is.na(GCKD_df1_male_less60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_less60_yes_d <- sum(!is.na(GCKD_df1_male_less60$cardiovasc) & GCKD_df1_male_less60$cardiovasc == "cardiovasc_yes" & GCKD_df1_male_less60$diabetes == "diabetes_yes")
+cardiovasc_less60_yes_d_BinomCI <- BinomCI(x=sum(GCKD_df1_male_less60$diabetes == "diabetes_yes" & GCKD_df1_male_less60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                           n=sum(GCKD_df1_male_less60$diabetes == "diabetes_yes" &!is.na(GCKD_df1_male_less60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_less60_yes_perc_d <-round(cardiovasc_less60_yes_d_BinomCI[1], 1)
+cardiovasc_less60_yes_CI_low_d <- round(cardiovasc_less60_yes_d_BinomCI[2], 1)
+cardiovasc_less60_yes_CI_high_d <-round(cardiovasc_less60_yes_d_BinomCI[3], 1)
+cardiovasc_less60_yes_CI_d <- paste(cardiovasc_less60_yes_CI_low_d, cardiovasc_less60_yes_CI_high_d, sep="-")
+cardiovasc_less60_yes_nd <- sum(!is.na(GCKD_df1_male_less60$cardiovasc) & GCKD_df1_male_less60$cardiovasc == "cardiovasc_yes" & GCKD_df1_male_less60$diabetes == "diabetes_no")
+cardiovasc_less60_yes_nd_BinomCI <- BinomCI(x=sum(GCKD_df1_male_less60$diabetes == "diabetes_no" & GCKD_df1_male_less60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                            n=sum(GCKD_df1_male_less60$diabetes == "diabetes_no" & !is.na(GCKD_df1_male_less60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_less60_yes_perc_nd <-round(cardiovasc_less60_yes_nd_BinomCI[1], 1)
+cardiovasc_less60_yes_CI_low_nd <- round(cardiovasc_less60_yes_nd_BinomCI[2], 1)
+cardiovasc_less60_yes_CI_high_nd <-round(cardiovasc_less60_yes_nd_BinomCI[3], 1)
+cardiovasc_less60_yes_CI_nd <- paste(cardiovasc_less60_yes_CI_low_nd, cardiovasc_less60_yes_CI_high_nd, sep="-")
 GCKD_df1_male_more60 <- GCKD_df1_male %>% subset(GCKD_df1_male$BL_age > 60)
-table(GCKD_df1_male_more60$diabetes, GCKD_df1_male_more60$cardiovasc == 1,  useNA = "always")  
-BinomCI(x=sum(GCKD_df1_male_more60$diabetes == "1" & GCKD_df1_male_more60$cardiovasc == "1", na.rm=TRUE), n=sum(GCKD_df1_male_more60$diabetes == "1" & !is.na(GCKD_df1_male_more60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_male_more60$diabetes == "2" & GCKD_df1_male_more60$cardiovasc == "1", na.rm=TRUE), n=sum(GCKD_df1_male_more60$diabetes == "2" & !is.na(GCKD_df1_male_more60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_more60_yes_d <- sum(!is.na(GCKD_df1_male_more60$cardiovasc) & GCKD_df1_male_more60$cardiovasc == "cardiovasc_yes" & GCKD_df1_male_more60$diabetes == "diabetes_yes")
+cardiovasc_more60_yes_d_BinomCI <- BinomCI(x=sum(GCKD_df1_male_more60$diabetes == "diabetes_yes" & GCKD_df1_male_more60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                           n=sum(GCKD_df1_male_more60$diabetes == "diabetes_yes" &!is.na(GCKD_df1_male_more60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_more60_yes_perc_d <-round(cardiovasc_more60_yes_d_BinomCI[1], 1)
+cardiovasc_more60_yes_CI_low_d <- round(cardiovasc_more60_yes_d_BinomCI[2], 1)
+cardiovasc_more60_yes_CI_high_d <-round(cardiovasc_more60_yes_d_BinomCI[3], 1)
+cardiovasc_more60_yes_CI_d <- paste(cardiovasc_more60_yes_CI_low_d, cardiovasc_more60_yes_CI_high_d, sep="-")
+cardiovasc_more60_yes_nd <- sum(!is.na(GCKD_df1_male_more60$cardiovasc) & GCKD_df1_male_more60$cardiovasc == "cardiovasc_yes" & GCKD_df1_male_more60$diabetes == "diabetes_no")
+cardiovasc_more60_yes_nd_BinomCI <- BinomCI(x=sum(GCKD_df1_male_more60$diabetes == "diabetes_no" & GCKD_df1_male_more60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                            n=sum(GCKD_df1_male_more60$diabetes == "diabetes_no" & !is.na(GCKD_df1_male_more60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_more60_yes_perc_nd <-round(cardiovasc_more60_yes_nd_BinomCI[1], 1)
+cardiovasc_more60_yes_CI_low_nd <- round(cardiovasc_more60_yes_nd_BinomCI[2], 1)
+cardiovasc_more60_yes_CI_high_nd <-round(cardiovasc_more60_yes_nd_BinomCI[3], 1)
+cardiovasc_more60_yes_CI_nd <- paste(cardiovasc_more60_yes_CI_low_nd, cardiovasc_more60_yes_CI_high_nd, sep="-")
+### clean and combine data
+GCKD_df1_male_table_4 <- as_tibble(GCKD_df1_male_table_4)
+Cardiovasc_less60_yes <- c("cardiovasc_less60_yes", cardiovasc_less60_yes_d, cardiovasc_less60_yes_nd, cardiovasc_less60_yes_perc_d, cardiovasc_less60_yes_CI_d, 
+                           cardiovasc_less60_yes_perc_nd, cardiovasc_less60_yes_CI_nd)
+Cardiovasc_more60_yes <- c("cardiovasc_more60_yes", cardiovasc_more60_yes_d, cardiovasc_more60_yes_nd, cardiovasc_more60_yes_perc_d, cardiovasc_more60_yes_CI_d, 
+                           cardiovasc_more60_yes_perc_nd, cardiovasc_more60_yes_CI_nd)
+tbl4_cardiovasc_less60_male <- rbind(GCKD_df1_male_table_4, Cardiovasc_less60_yes)
+tbl4_cardiovasc_60_male <- rbind(tbl4_cardiovasc_less60_male, Cardiovasc_more60_yes)
+setwd(path_tbl)
+write.xlsx(tbl4_cardiovasc_60_male, "tbl4_male_origin.xlsx")
+## Table 4 merge subsets
+tbl4_female_male_origin <- full_join(x = tbl4_cardiovasc_60_male, y = tbl4_cardiovasc_60_fem, by = "Variable")
+tbl4_total_female_male_origin <- full_join(x = tbl4_female_male_origin, y = tbl4_cardiovasc_60, by = "Variable")
+tbl4_origin <- subset(tbl4_total_female_male_origin, !(endsWith(tbl4_total_female_male_origin$Variable, "_no")) & 
+                        tbl4_total_female_male_origin$Variable != "(Missing)" &
+                        tbl4_total_female_male_origin$Variable != "Female" &
+                        tbl4_total_female_male_origin$Variable != "Male" &
+                        (!is.na(tbl4_total_female_male_origin$n_female_d) | !is.na(tbl4_total_female_male_origin$n_male_d)))
+setwd(path_tbl)
+write.xlsx(tbl4_origin, "tbl4_origin.xlsx")
 
 ## Suppl. Table 2: GFR categories
 GCKD_df1_stbl2 <- c("BL_gfr_mdrd", "BL_gfr_ckdepi", "BL_gfr_ckdepi_cys","BL_gfr_ckdepi_creacys")
@@ -644,7 +783,7 @@ GCKD_df1_table_s3a <-
                      all_categorical() ~ "{n}"),
     digits = all_continuous() ~ 1,
     missing_text = "(Missing)") %>%
-  modify_header(label = "Variable", stat_1 = "DM w DN; n or mean", stat_2 = "DM wo DN; n or mean", stat_3 = "No DM; n or mean") %>%
+  modify_header(label = "Variable", stat_1 = "n_mean_DMwDN", stat_2 = "n_mean_DMwoDN", stat_3 = "n_mean_NoDM") %>%
   modify_footnote(update = everything() ~ NA)
 GCKD_df1_table_s3b <-
   GCKD_df1 %>%
@@ -658,7 +797,7 @@ GCKD_df1_table_s3b <-
   add_ci(statistic=list(all_categorical() ~ "{conf.low}-{conf.high}", all_continuous() ~ "{conf.low}-{conf.high}"),
          style_fun=list(all_categorical() ~ purrr::partial(style_sigfig, digits=3, scale = 100), 
                         all_continuous() ~ purrr::partial(style_sigfig, digits=3))) %>%
-    modify_header(label = "Variable", stat_1 = "DM w DN; SD or %", ci_stat_1 = "DM w DN; 95% CI", stat_2 = "DM wo DN; SD or %", ci_stat_2 = "DM wo DN; 95% CI", stat_3 = "No DM; SD or %", ci_stat_3 = "No DM; 95% CI") %>%
+    modify_header(label = "Variable", stat_1 = "perc_DMwDN", ci_stat_1 = "CI_DMwDN", stat_2 = "perc_DMwoDN", ci_stat_2 = "CI_DMwoDN", stat_3 = "perc_NoDM", ci_stat_3 = "CI_NoDM") %>%
   modify_footnote(update = everything() ~ NA)
 GCKD_df1_table_s3 <-
   tbl_merge(tbls = list(GCKD_df1_table_s3a, GCKD_df1_table_s3b)) %>%
@@ -667,6 +806,9 @@ GCKD_df1_table_s3 %>%
   as_gt() %>%
   gt::gtsave(filename = "GCKD_origin_table_s3.html", 
              path = path_results)
+GCKD_df1_table_s3 <- as_tibble(GCKD_df1_table_s3)
+setwd(path_results)
+write.xlsx(GCKD_df1_table_s3, "tbls3_origin.xlsx")
 ### calculated values in Table S3
 table(GCKD_df1$DM, GCKD_df1$BL_ku_bmi > 30,  useNA = "always")
 BinomCI(x=sum(GCKD_df1$DM =="DMwDN" & GCKD_df1$BL_ku_bmi > 30, na.rm=TRUE), n=sum(GCKD_df1$DM == "DMwDN" & !is.na(GCKD_df1$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)

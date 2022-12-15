@@ -26,7 +26,7 @@ estimate_CI <- function(Lor, Uor, Ean){
 ## Defining function for overlap in the interval lengths 
 ### based on Karr et al
 CI_overlap <- function(Lor, Uor, Lan, Uan){
-  if(is.na(Uor) == TRUE | is.na(Uan) == TRUE | is.na(Lor) == TRUE | CIis.na(Lan) == TRUE){
+  if(is.na(Uor) == TRUE | is.na(Uan) == TRUE | is.na(Lor) == TRUE | is.na(Lan) == TRUE){
     CIo <- NA
   }
   else if(Uor <= Uan & Lor >= Lan){
