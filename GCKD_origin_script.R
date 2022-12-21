@@ -9,7 +9,9 @@ path_data = "D:/BackUp GCKD"
 path_results = "C:/Users/User/OneDrive/Documents/PRIVAT/Charite/Forschung/Projekt Computerbasierte Anonymisierung/Titzeetal/Ergebnisse"
 path_tbl = "C:/Users/User/OneDrive/Documents/PRIVAT/Charite/Forschung/Projekt Computerbasierte Anonymisierung/Titzeetal/Ergebnisse/Tbl_perc_CI"
 setwd(path_data)
-GCKD_df1 <- as_tibble(read.xlsx("GCKD_df1_origin.xlsx", sep = ";"))
+#GCKD_df1 <- as_tibble(read.xlsx("GCKD_df1_origin.xlsx", sep = ";"))
+#write.table(GCKD_df1, "GCKD_df1_origin.csv", sep = ";", dec = ".", row.names = FALSE)
+GCKD_df1 <- as_tibble(read.csv("GCKD_df1_origin.csv", sep = ";"))
 dim(GCKD_df1)
 
 # Data Cleansing
@@ -66,6 +68,7 @@ GCKD_df1$ygraft <- mapvalues(GCKD_df1$ygraft, from = c("1", "2"), to = c("ygraft
 GCKD_df1$pavk_surgery <- mapvalues(GCKD_df1$pavk_surgery, from = c("1", "2"), to = c("pavk_surgery_yes", "pavk_surgery_no"))
 GCKD_df1$pta <- mapvalues(GCKD_df1$pta, from = c("1", "2"), to = c("pta_yes", "pta_no"))
 GCKD_df1$education <- mapvalues(GCKD_df1$education, from = c("1", "2", "3", "4"), to = c("edu_low", "edu_medium", "edu_high", "edu_uk"))
+GCKD_df1$education <- factor(GCKD_df1$education, c("edu_high", "edu_medium", "edu_low", "edu_uk"))
 col_num <- c("BL_ku_sys", "BL_ku_dia", "BL_ku_map", "BL_ku_ruhepuls", "BL_creavalue", "BL_cysvalue", 
              "BL_gfr_mdrd", "BL_gfr_ckdepi", "BL_gfr_ckdepi_cys", "BL_gfr_ckdepi_creacys", "BL_uacr", "BL_ku_bmi", "BL_age", "BL_ku_height_cm", "BL_ku_weight")
 GCKD_df1 <- GCKD_df1 %>% mutate(across(all_of(col_num), as.numeric))
@@ -768,8 +771,8 @@ for(i in GCKD_df1_stbl2) {
 ## Suppl. Table 3: Diabetic nephropathy
 var_table_s3 <- c("BL_age", "education", "aa_stroke", "aa_myocard", "aa_hypertens", "aa_diabetes", "aa_renal", 
                  "aa_renal_stones", "aa_dialyse", "aa_ntx", "smoking", "hospital", "BL_ku_height_cm","BL_ku_weight", 
-                 "BL_ku_bmi", "BL_ku_sys", "BL_ku_dia", "BL_ku_map", "BL_ku_ruhepuls", "BL_creavalue", "BL_cysvalue",
-                 "BL_gfr_mdrd", "BL_med_raas_ace", "BL_med_raas_at1", "BL_med_raas_double", 
+                 "BL_ku_bmi","BMI_cat", "BL_ku_ruhepuls", "BL_ku_sys", "BL_ku_dia", "BL_ku_map", "RR130", "RR140", "BL_creavalue", "BL_cysvalue",
+                 "BL_gfr_mdrd", "gfr_mdrd_cat", "BL_uacr", "uacr_cat", "BL_med_raas_ace", "BL_med_raas_at1", "BL_med_raas_double", 
                  "BL_med_raas_single", "BL_med_diuretic", "BL_med_diuretic_thiazid", "BL_med_diuretic_aldost", 
                  "BL_med_diuretic_loop", "BL_med_caanta", "BL_med_bblocker", "biopsy", "DM")
 table(GCKD_df1$DM)
@@ -780,6 +783,7 @@ GCKD_df1_table_s3a <-
   tbl_summary(
     by = DM,
     statistic = list(all_continuous() ~ "{mean}",
+                     BL_uacr ~ "{median}", 
                      all_categorical() ~ "{n}"),
     digits = all_continuous() ~ 1,
     missing_text = "(Missing)") %>%
@@ -791,6 +795,7 @@ GCKD_df1_table_s3b <-
   tbl_summary(
     by = DM,
     statistic = list(all_continuous() ~ "{sd}",
+                     BL_uacr ~ "{p25}-{p75}",
                      all_categorical() ~ "{p}"),
     digits = ~ 1,
     missing_text = "(Missing)") %>%
@@ -806,66 +811,32 @@ GCKD_df1_table_s3 %>%
   as_gt() %>%
   gt::gtsave(filename = "GCKD_origin_table_s3.html", 
              path = path_results)
+## UACR median CI calculation
+GCKD_df1_DMwDN <- GCKD_df1 %>% subset(DM == "DMwDN")
+GCKD_df1_DMwoDN <- GCKD_df1 %>% subset(DM == "DMwoDN")
+GCKD_df1_NoDM <- GCKD_df1 %>% subset(DM == "No DM")
+UACR_MedCI_DMwDN <- MedianCI(GCKD_df1_DMwDN$BL_uacr, na.rm=TRUE)
+UACR_CI_low_DMwDN <- round(UACR_MedCI_DMwDN[2], 1)
+UACR_CI_high_DMwDN <-round(UACR_MedCI_DMwDN[3], 1)
+UACR_CI_DMwDN <- paste(UACR_CI_low_DMwDN, UACR_CI_high_DMwDN, sep="-")
+UACR_MedCI_DMwoDN <- MedianCI(GCKD_df1_DMwoDN$BL_uacr, na.rm=TRUE)
+UACR_CI_low_DMwoDN <- round(UACR_MedCI_DMwoDN[2], 1)
+UACR_CI_high_DMwoDN <-round(UACR_MedCI_DMwoDN[3], 1)
+UACR_CI_DMwoDN <- paste(UACR_CI_low_DMwoDN, UACR_CI_high_DMwoDN, sep="-")
+UACR_MedCI_NoDM <- MedianCI(GCKD_df1_NoDM$BL_uacr, na.rm=TRUE)
+UACR_CI_low_NoDM <- round(UACR_MedCI_NoDM[2], 1)
+UACR_CI_high_NoDM <-round(UACR_MedCI_NoDM[3], 1)
+UACR_CI_NoDM <- paste(UACR_CI_low_NoDM, UACR_CI_high_NoDM, sep="-")
+### clean and combine data
 GCKD_df1_table_s3 <- as_tibble(GCKD_df1_table_s3)
-setwd(path_results)
-write.xlsx(GCKD_df1_table_s3, "tbls3_origin.xlsx")
-### calculated values in Table S3
-table(GCKD_df1$DM, GCKD_df1$BL_ku_bmi > 30,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$DM =="DMwDN" & GCKD_df1$BL_ku_bmi > 30, na.rm=TRUE), n=sum(GCKD_df1$DM == "DMwDN" & !is.na(GCKD_df1$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="DMwoDN" & GCKD_df1$BL_ku_bmi > 30, na.rm=TRUE), sum(GCKD_df1$DM == "DMwoDN" & !is.na(GCKD_df1$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="No DM" & GCKD_df1$BL_ku_bmi > 30, na.rm=TRUE), sum(GCKD_df1$DM == "No DM" & !is.na(GCKD_df1$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1$DM, GCKD_df1$BL_ku_bmi <= 30 & GCKD_df1$BL_ku_bmi > 25,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$DM =="DMwDN" & GCKD_df1$BL_ku_bmi <= 30 & GCKD_df1$BL_ku_bmi > 25, na.rm=TRUE), n=sum(GCKD_df1$DM == "DMwDN" & !is.na(GCKD_df1$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="DMwoDN" & GCKD_df1$BL_ku_bmi <= 30 & GCKD_df1$BL_ku_bmi > 25, na.rm=TRUE), sum(GCKD_df1$DM == "DMwoDN" & !is.na(GCKD_df1$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="No DM" & GCKD_df1$BL_ku_bmi <= 30 & GCKD_df1$BL_ku_bmi > 25, na.rm=TRUE), sum(GCKD_df1$DM == "No DM" & !is.na(GCKD_df1$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1$DM, GCKD_df1$BL_ku_bmi <= 25,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$DM =="DMwDN" & GCKD_df1$BL_ku_bmi <= 25, na.rm=TRUE), n=sum(GCKD_df1$DM == "DMwDN" & !is.na(GCKD_df1$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="DMwoDN" & GCKD_df1$BL_ku_bmi <= 25, na.rm=TRUE), sum(GCKD_df1$DM == "DMwoDN" & !is.na(GCKD_df1$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="No DM" & GCKD_df1$BL_ku_bmi <= 25, na.rm=TRUE), sum(GCKD_df1$DM == "No DM" & !is.na(GCKD_df1$BL_ku_bmi)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1$DM, GCKD_df1$BL_ku_sys < 130 & GCKD_df1$BL_ku_dia < 80,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$DM =="DMwDN" & GCKD_df1$BL_ku_sys < 130 & GCKD_df1$BL_ku_dia < 80, na.rm=TRUE), n=sum(GCKD_df1$DM == "DMwDN" & !is.na(GCKD_df1$BL_ku_sys)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="DMwoDN" & GCKD_df1$BL_ku_sys < 130 & GCKD_df1$BL_ku_dia < 80, na.rm=TRUE), n=sum(GCKD_df1$DM == "DMwoDN" & !is.na(GCKD_df1$BL_ku_sys)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="No DM" & GCKD_df1$BL_ku_sys < 130 & GCKD_df1$BL_ku_dia < 80, na.rm=TRUE), sum(GCKD_df1$DM == "No DM" & !is.na(GCKD_df1$BL_ku_sys)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1$DM, GCKD_df1$BL_ku_sys < 140 & GCKD_df1$BL_ku_dia < 90,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$DM =="DMwDN" & GCKD_df1$BL_ku_sys < 140 & GCKD_df1$BL_ku_dia < 90, na.rm=TRUE), n=sum(GCKD_df1$DM == "DMwDN" & !is.na(GCKD_df1$BL_ku_sys)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="DMwoDN" & GCKD_df1$BL_ku_sys < 140 & GCKD_df1$BL_ku_dia < 90, na.rm=TRUE), n=sum(GCKD_df1$DM == "DMwoDN" & !is.na(GCKD_df1$BL_ku_sys)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="No DM" & GCKD_df1$BL_ku_sys < 140 & GCKD_df1$BL_ku_dia < 90, na.rm=TRUE), sum(GCKD_df1$DM == "No DM" & !is.na(GCKD_df1$BL_ku_sys)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1$DM, GCKD_df1$BL_gfr_mdrd >= 60,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$DM =="DMwDN" & GCKD_df1$BL_gfr_mdrd >= 60, na.rm=TRUE), n=sum(GCKD_df1$DM =="DMwDN" & !is.na(GCKD_df1$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="DMwoDN" & GCKD_df1$BL_gfr_mdrd >= 60, na.rm=TRUE), n=sum(GCKD_df1$DM =="DMwoDN" & !is.na(GCKD_df1$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="No DM" & GCKD_df1$BL_gfr_mdrd >= 60, na.rm=TRUE), sum(GCKD_df1$DM == "No DM" & !is.na(GCKD_df1$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1$DM, GCKD_df1$BL_gfr_mdrd >= 45 & GCKD_df1$BL_gfr_mdrd < 60,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$DM =="DMwDN" & GCKD_df1$BL_gfr_mdrd >= 45 & GCKD_df1$BL_gfr_mdrd < 60, na.rm=TRUE), n=sum(GCKD_df1$DM =="DMwDN" & !is.na(GCKD_df1$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="DMwoDN" & GCKD_df1$BL_gfr_mdrd >= 45 & GCKD_df1$BL_gfr_mdrd < 60, na.rm=TRUE), n=sum(GCKD_df1$DM =="DMwoDN" & !is.na(GCKD_df1$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="No DM" & GCKD_df1$BL_gfr_mdrd >= 45 & GCKD_df1$BL_gfr_mdrd < 60, na.rm=TRUE), sum(GCKD_df1$DM == "No DM" & !is.na(GCKD_df1$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1$DM, GCKD_df1$BL_gfr_mdrd >= 30 & GCKD_df1$BL_gfr_mdrd < 45,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$DM =="DMwDN" & GCKD_df1$BL_gfr_mdrd >= 30 & GCKD_df1$BL_gfr_mdrd < 45, na.rm=TRUE), n=sum(GCKD_df1$DM =="DMwDN" & !is.na(GCKD_df1$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="DMwoDN" & GCKD_df1$BL_gfr_mdrd >= 30 & GCKD_df1$BL_gfr_mdrd < 45, na.rm=TRUE), n=sum(GCKD_df1$DM =="DMwoDN" & !is.na(GCKD_df1$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="No DM" & GCKD_df1$BL_gfr_mdrd >= 30 & GCKD_df1$BL_gfr_mdrd < 45, na.rm=TRUE), sum(GCKD_df1$DM == "No DM" & !is.na(GCKD_df1$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1$DM, GCKD_df1$BL_gfr_mdrd < 30,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$DM =="DMwDN" & GCKD_df1$BL_gfr_mdrd < 30, na.rm=TRUE), n=sum(GCKD_df1$DM =="DMwDN" & !is.na(GCKD_df1$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="DMwoDN" & GCKD_df1$BL_gfr_mdrd < 30, na.rm=TRUE), n=sum(GCKD_df1$DM =="DMwoDN" & !is.na(GCKD_df1$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="No DM" & GCKD_df1$BL_gfr_mdrd < 30, na.rm=TRUE), sum(GCKD_df1$DM == "No DM" & !is.na(GCKD_df1$BL_gfr_mdrd)), method="wilson") %>% '*'(100) %>% round(1)
-GCKD_df1 %>% group_by(DM) %>%
-  summarise_at(vars(BL_uacr), list(~ round(quantile(., na.rm=TRUE), 1)))
-GCKD_df1_dmwdn <- GCKD_df1 %>% subset(DM == "DMwDN")
-GCKD_df1_dmwodn <- GCKD_df1 %>% subset(DM == "DMwoDN")
-GCKD_df1_nodm <- GCKD_df1 %>% subset(DM == "No DM")
-MedianCI(GCKD_df1_dmwdn$BL_uacr, na.rm=TRUE)
-MedianCI(GCKD_df1_dmwodn$BL_uacr, na.rm=TRUE)
-MedianCI(GCKD_df1_nodm$BL_uacr, na.rm=TRUE)
-table(GCKD_df1$DM, GCKD_df1$BL_uacr < 30,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$DM =="DMwDN" & GCKD_df1$BL_uacr < 30, na.rm=TRUE), n=sum(GCKD_df1$DM =="DMwDN" & !is.na(GCKD_df1$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="DMwoDN" & GCKD_df1$BL_uacr < 30, na.rm=TRUE), n=sum(GCKD_df1$DM =="DMwoDN" & !is.na(GCKD_df1$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="No DM" & GCKD_df1$BL_uacr < 30, na.rm=TRUE), n=sum(GCKD_df1$DM =="No DM" & !is.na(GCKD_df1$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1$DM, GCKD_df1$BL_uacr >= 30 & GCKD_df1$BL_uacr <= 300,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$DM =="DMwDN" & GCKD_df1$BL_uacr >= 30 & GCKD_df1$BL_uacr <= 300, na.rm=TRUE), n=sum(GCKD_df1$DM =="DMwDN" & !is.na(GCKD_df1$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="DMwoDN" & GCKD_df1$BL_uacr >= 30 & GCKD_df1$BL_uacr <= 300, na.rm=TRUE), n=sum(GCKD_df1$DM =="DMwoDN" & !is.na(GCKD_df1$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="No DM" & GCKD_df1$BL_uacr < 30, na.rm=TRUE), n=sum(GCKD_df1$DM =="No DM" & !is.na(GCKD_df1$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1$DM, GCKD_df1$BL_uacr > 300,  useNA = "always")
-BinomCI(x=sum(GCKD_df1$DM =="DMwDN" & GCKD_df1$BL_uacr > 300, na.rm=TRUE), n=sum(GCKD_df1$DM =="DMwDN" & !is.na(GCKD_df1$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="DMwoDN" & GCKD_df1$BL_uacr > 300, na.rm=TRUE), n=sum(GCKD_df1$DM =="DMwoDN" & !is.na(GCKD_df1$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1$DM =="No DM" & GCKD_df1$BL_uacr < 30, na.rm=TRUE), n=sum(GCKD_df1$DM =="No DM" & !is.na(GCKD_df1$BL_uacr)), method="wilson") %>% '*'(100) %>% round(1)
+GCKD_df1_table_s3$CI_DMwDN[GCKD_df1_table_s3$Variable == "BL_uacr"] <- UACR_CI_DMwDN
+GCKD_df1_table_s3$CI_DMwoDN[GCKD_df1_table_s3$Variable == "BL_uacr"] <- UACR_CI_DMwoDN
+GCKD_df1_table_s3$CI_NoDM[GCKD_df1_table_s3$Variable == "BL_uacr"] <- UACR_CI_NoDM
+tbls3_origin <- subset(GCKD_df1_table_s3, !(endsWith(GCKD_df1_table_s3$Variable, "_no")) & 
+                         GCKD_df1_table_s3$Variable != "(Missing)" &
+                         (!is.na(GCKD_df1_table_s3$n_mean_DMwDN) | !is.na(GCKD_df1_table_s3$n_mean_DMwoDN)))
+setwd(path_tbl)
+write.xlsx(tbls3_origin, "tbls3_origin.xlsx")
 
 ## Suppl. Figure 1: Age distribution stratified
 GCKD_df1_FigS1 <- GCKD_df1

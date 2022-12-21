@@ -11,9 +11,13 @@ setwd(path_tbl)
 
 ## Defining function for overlap in the interval lengths 
 ### based on Karr et al
+#### no overlap is defined as 0
 CI_overlap <- function(Lor, Uor, Lan, Uan){
   if(is.na(Uor) == TRUE | is.na(Uan) == TRUE | is.na(Lor) == TRUE | is.na(Lan) == TRUE){
     CIo <- NA
+  }
+  else if(Uor < Lan | Uan < Lor){
+    CIo <- 0
   }
   else if(Uor <= Uan & Lor >= Lan){
     CIo <- 0.5*((Uor-Lor)/(Uor-Lor)+(Uor-Lor)/(Uan-Lan))
@@ -44,7 +48,7 @@ tbl1_origin <- subset(tbl1_origin,
                         tbl1_origin$Variable != "25.1-29.9"&
                         tbl1_origin$Variable != "<=25"&
                         tbl1_origin$Variable != "Male")
-tbl1_anonym <- as_tibble(read.xlsx("tbl1_kanonymity_generic_11.xlsx"))
+tbl1_anonym <- as_tibble(read.xlsx("tbl1_strictaverage_usecase_11.xlsx"))
 tbl1_anonym <- subset(tbl1_anonym,  
                       tbl1_anonym$Variable != "Male")
 ## Separating 95% CI bounds
@@ -110,19 +114,19 @@ for(i in 1:nrow((tbl1_anonym))) {
 
 tbl1_ci$Variable <- row.names(tbl1_ci)
 tbl1_ci <- tbl1_ci %>% replace(is.na(.), 100.0)
-write.xlsx(tbl1_ci, "tb1_CIoverlap_kanonymity_generic_11.xlsx")
+write.xlsx(tbl1_ci, "tbl1_CIoverlap_strictaverage_usecase_11.xlsx")
 
-# Fig 1: 100% replicability
+# Fig 1: 100% replicability (included as more a table than a figure)
 
 # Tbl 2
 ## Datasets
 tbl2_total_origin <- as_tibble(read.xlsx("tbl2_origin.xlsx"))
 tbl2_total_origin <- subset(tbl2_total_origin, tbl2_total_origin$Variable != "BL_age")
 tbl2_origin <- subset(tbl2_total_origin, tbl2_total_origin$Variable == "Male" |
-                            tbl2_total_origin$Variable == "biopsy_yes" |
-                            tbl2_total_origin$Variable == "cardiovasc_less60_yes" |
-                            tbl2_total_origin$Variable == "cardiovasc_more60_yes")
-tbl2_anonym <- as_tibble(read.xlsx("tbl2_kanonymity_generic_11.xlsx"))
+                        tbl2_total_origin$Variable == "biopsy_yes" |
+                        tbl2_total_origin$Variable == "cardiovasc_less60_yes" |
+                        tbl2_total_origin$Variable == "cardiovasc_more60_yes")
+tbl2_anonym <- as_tibble(read.xlsx("tbl2_strictaverage_usecase_11.xlsx"))
 
 ## Separating 95% CI bounds
 tbl2_origin[c("CI_egfr_low", "CI_egfr_up")] <- str_split_fixed(tbl2_origin$CI_egfr, "-", 2)
@@ -159,9 +163,9 @@ tbl2_ci$Variable <- row.names(tbl2_ci)
 tbl2_ci <- full_join(x = tbl2_total_origin, y = tbl2_ci, by = "Variable")
 tbl2_ci <- tbl2_ci %>% replace(is.na(.), 100.0)
 tbl2_ci <- subset(tbl2_ci, select = c(CI_overlap_egfr, CI_overlap_prot, Variable))
-write.xlsx(tbl2_ci, "tbl2_CIoverlap_kanonymity_generic_11.xlsx")
+write.xlsx(tbl2_ci, "tbl2_CIoverlap_strictaverage_usecase_11.xlsx")
 
-# Fig 2: 100% replicability
+# Fig 2: 100% replicability (tbd: some numbers but predominantly figure)
 
 # Tbl 3
 ## Datasets
@@ -170,7 +174,7 @@ tbl3_total_origin_t <- data.frame(t(tbl3_total_origin[-1]))
 colnames(tbl3_total_origin_t) <- c("biopsy", "biopsy_no", "CI_biopsy", "(Missing)")
 tbl3_total_origin_t$Variable <- row.names(tbl3_total_origin_t)
 tbl3_origin <- subset(tbl3_total_origin_t, select = c("Variable", "CI_biopsy"), !(startsWith(tbl3_total_origin_t$Variable, "perc_")))
-tbl3_total_anonym <- as_tibble(read.xlsx("tbl3_kanonymity_generic_11.xlsx"))
+tbl3_total_anonym <- as_tibble(read.xlsx("tbl3_strictaverage_usecase_11.xlsx"))
 tbl3_total_anonym_t <- data.frame(t(tbl3_total_anonym[-1]))
 colnames(tbl3_total_anonym_t) <- c("biopsy", "biopsy_no", "CI_biopsy", "(Missing)")
 tbl3_total_anonym_t$Variable <- row.names(tbl3_total_anonym_t)
@@ -210,10 +214,14 @@ CI_overlap_ckd_heredit = c(100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100
 CI_overlap_ckd_obstr = c(100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100)
 tbl3_ci_total <- cbind(CI_overlap_ckd_diab, CI_overlap_ckd_oth, CI_overlap_ckd_lead_uk, CI_overlap_ckd_vask, CI_overlap_ckd_syst, CI_overlap_ckd_glom_prim, 
                        CI_overlap_ckd_interst, CI_overlap_ckd_aki, CI_overlap_ckd_single, CI_overlap_ckd_heredit, CI_overlap_ckd_obstr, tbl3_ci)
-write.xlsx(tbl3_ci_total, "tbl3_CIoverlap_kanonymity_generic_11.xlsx")
+write.xlsx(tbl3_ci_total, "tbl3_CIoverlap_strictaverage_usecase_11.xlsx")
+
+# Fig 3: 100% replicability (not included: predominantly figure)
 
 # Tbl 4
-# Preprocessing
+## Datasets
+tbl4_origin <- as_tibble(read.xlsx("tbl4_origin.xlsx"))
+tbl4_anonym <- as_tibble(read.xlsx("tbl4_strictaverage_usecase_11.xlsx"))
 ## Separating 95% CI bounds
 tbl4_origin[c("CI_total_low", "CI_total_up")] <- str_split_fixed(tbl4_origin$CI_total, "-", 2)
 tbl4_origin$CI_total_low <- as.numeric(tbl4_origin$CI_total_low)
@@ -248,42 +256,13 @@ tbl4_anonym$CI_female_nd_up <- as.numeric(tbl4_anonym$CI_female_nd_up)
 ## Rounding 1 decimal
 tbl4_origin <- tbl4_origin %>% mutate(across(where(is.numeric), ~round(., 1)))
 tbl4_anonym <- tbl4_anonym %>% mutate(across(where(is.numeric), ~round(., 1)))
-# Calculations
-## estimate within 95% CI
-tbl4_est <- data.frame(NA_col = rep(NA, 52))
-res_male_d = numeric(52)
-res_male_nd = numeric(52)
-res_female_d = numeric(52)
-res_female_nd = numeric(52)
-res = numeric(52)
-for(i in 1:nrow((tbl4_anonym))) {
-  var = tbl4_origin$Variable[i]
-  res_male_d[i] <- estimate_CI(tbl4_origin$CI_male_d_low[i], tbl4_origin$CI_male_d_up[i], tbl4_anonym$perc_male_d[i])
-  tbl4_est[, 1] <- res_male_d
-  res_male_nd[i] <- estimate_CI(tbl4_origin$CI_male_nd_low[i], tbl4_origin$CI_male_nd_up[i], tbl4_anonym$perc_male_nd[i])
-  tbl4_est[, 2] <- res_male_nd
-  res_female_d[i] <- estimate_CI(tbl4_origin$CI_female_d_low[i], tbl4_origin$CI_female_d_up[i], tbl4_anonym$perc_female_d[i])
-  tbl4_est[, 3] <- res_female_d
-  res_female_nd[i] <- estimate_CI(tbl4_origin$CI_female_nd_low[i], tbl4_origin$CI_female_nd_up[i], tbl4_anonym$perc_female_nd[i])
-  tbl4_est[, 4] <- res_female_nd
-  res[i] <- estimate_CI(tbl4_origin$CI_total_low[i], tbl4_origin$CI_total_up[i], tbl4_anonym$perc_total[i]) 
-  tbl4_est[, 5] <- res
-  rownames(tbl4_est)[i] <- paste0(var)
-  colnames(tbl4_est)[1] <- paste0("Estimate_male_d")
-  colnames(tbl4_est)[2] <- paste0("Estimate_male_nd")
-  colnames(tbl4_est)[3] <- paste0("Estimate_female_d")
-  colnames(tbl4_est)[4] <- paste0("Estimate_female_nd")
-  colnames(tbl4_est)[5] <- paste0("Estimate_total")
-}
-tbl4_est$Variable <- row.names(tbl4_est)
-write.xlsx(tbl4_est, "GCKD_results_est_tbl4_specific_k11k2.xlsx")
-## overlapping 95% CI
-tbl4_ci <- data.frame(NA_col = rep(NA, 52))
-res_ci_male_d = numeric(52)
-res_ci_male_nd = numeric(52)
-res_ci_female_d = numeric(52)
-res_ci_female_nd = numeric(52)
-res_ci = numeric(52)
+## Overlapping 95% CI
+tbl4_ci <- data.frame(NA_col = rep(NA, 18))
+res_ci_male_d = numeric(18)
+res_ci_male_nd = numeric(18)
+res_ci_female_d = numeric(18)
+res_ci_female_nd = numeric(18)
+res_ci = numeric(18)
 for(i in 1:nrow((tbl4_anonym))) {
   var = tbl4_origin$Variable[i]
   res_ci_male_d[i] <- CI_overlap(tbl4_origin$CI_male_d_low[i], tbl4_origin$CI_male_d_up[i], tbl4_anonym$CI_male_d_low[i], tbl4_anonym$CI_male_d_up[i])
@@ -304,588 +283,66 @@ for(i in 1:nrow((tbl4_anonym))) {
   colnames(tbl4_ci)[5] <- paste0("CI_overlap_total")
 }
 tbl4_ci$Variable <- row.names(tbl4_ci)
-write.xlsx(tbl4_ci, "GCKD_results_ci_tbl4_specific_k11k2.xlsx")
+## Adding 100% replicability
+tbl4_ci <- tbl4_ci %>% replace(is.na(.), 100.0)
+write.xlsx(tbl4_ci, "tbl4_CIoverlap_strictaverage_usecase_11.xlsx")
 
-# Tbl S3
-# Preprocessing
+# Suppl. Tbl 2: 100% replicability
+
+# Tbl s3
+## Datasets
+tbls3_total_origin <- as_tibble(read.xlsx("tbls3_origin.xlsx"))
+tbls3_total_origin <- subset(tbls3_total_origin, tbls3_total_origin$Variable != "BL_age" &
+                               tbls3_total_origin$Variable != "BL_ku_bmi" &
+                               tbls3_total_origin$Variable != "BL_ku_height_cm" &
+                               tbls3_total_origin$Variable != "BL_ku_weight")
+tbls3_origin <- subset(tbls3_total_origin, tbls3_total_origin$Variable == "biopsy_yes")
+tbls3_anonym <- as_tibble(read.xlsx("tbls3_strictaverage_usecase_11.xlsx"))
 ## Separating 95% CI bounds
-tbls3_origin[c("CI_dmwdn_low", "CI_dmwdn_up")] <- str_split_fixed(tbls3_origin$CI_dmwdn, "-", 2)
-tbls3_origin$CI_dmwdn_low <- as.numeric(tbls3_origin$CI_dmwdn_low)
-tbls3_origin$CI_dmwdn_up <- as.numeric(tbls3_origin$CI_dmwdn_up)
-tbls3_anonym[c("CI_dmwdn_low", "CI_dmwdn_up")] <- str_split_fixed(tbls3_anonym$CI_dmwdn, "-", 2)
-tbls3_anonym$CI_dmwdn_low <- as.numeric(tbls3_anonym$CI_dmwdn_low)
-tbls3_anonym$CI_dmwdn_up <- as.numeric(tbls3_anonym$CI_dmwdn_up)
-tbls3_origin[c("CI_dmwodn_low", "CI_dmwodn_up")] <- str_split_fixed(tbls3_origin$CI_dmwodn, "-", 2)
-tbls3_origin$CI_dmwodn_low <- as.numeric(tbls3_origin$CI_dmwodn_low)
-tbls3_origin$CI_dmwodn_up <- as.numeric(tbls3_origin$CI_dmwodn_up)
-tbls3_anonym[c("CI_dmwodn_low", "CI_dmwodn_up")] <- str_split_fixed(tbls3_anonym$CI_dmwodn, "-", 2)
-tbls3_anonym$CI_dmwodn_low <- as.numeric(tbls3_anonym$CI_dmwodn_low)
-tbls3_anonym$CI_dmwodn_up <- as.numeric(tbls3_anonym$CI_dmwodn_up)
-tbls3_origin[c("CI_nodm_low", "CI_nodm_up")] <- str_split_fixed(tbls3_origin$CI_nodm, "-", 2)
-tbls3_origin$CI_nodm_low <- as.numeric(tbls3_origin$CI_nodm_low)
-tbls3_origin$CI_nodm_up <- as.numeric(tbls3_origin$CI_nodm_up)
-tbls3_anonym[c("CI_nodm_low", "CI_nodm_up")] <- str_split_fixed(tbls3_anonym$CI_nodm, "-", 2)
-tbls3_anonym$CI_nodm_low <- as.numeric(tbls3_anonym$CI_nodm_low)
-tbls3_anonym$CI_nodm_up <- as.numeric(tbls3_anonym$CI_nodm_up)
+tbls3_origin[c("CI_DMwDN_low", "CI_DMwDN_up")] <- str_split_fixed(tbls3_origin$CI_DMwDN, "-", 2)
+tbls3_origin$CI_DMwDN_low <- as.numeric(tbls3_origin$CI_DMwDN_low)
+tbls3_origin$CI_DMwDN_up <- as.numeric(tbls3_origin$CI_DMwDN_up)
+tbls3_anonym[c("CI_DMwDN_low", "CI_DMwDN_up")] <- str_split_fixed(tbls3_anonym$CI_DMwDN, "-", 2)
+tbls3_anonym$CI_DMwDN_low <- as.numeric(tbls3_anonym$CI_DMwDN_low)
+tbls3_anonym$CI_DMwDN_up <- as.numeric(tbls3_anonym$CI_DMwDN_up)
+tbls3_origin[c("CI_DMwoDN_low", "CI_DMwoDN_up")] <- str_split_fixed(tbls3_origin$CI_DMwoDN, "-", 2)
+tbls3_origin$CI_DMwoDN_low <- as.numeric(tbls3_origin$CI_DMwoDN_low)
+tbls3_origin$CI_DMwoDN_up <- as.numeric(tbls3_origin$CI_DMwoDN_up)
+tbls3_anonym[c("CI_DMwoDN_low", "CI_DMwoDN_up")] <- str_split_fixed(tbls3_anonym$CI_DMwoDN, "-", 2)
+tbls3_anonym$CI_DMwoDN_low <- as.numeric(tbls3_anonym$CI_DMwoDN_low)
+tbls3_anonym$CI_DMwoDN_up <- as.numeric(tbls3_anonym$CI_DMwoDN_up)
+tbls3_origin[c("CI_NoDM_low", "CI_NoDM_up")] <- str_split_fixed(tbls3_origin$CI_NoDM, "-", 2)
+tbls3_origin$CI_NoDM_low <- as.numeric(tbls3_origin$CI_NoDM_low)
+tbls3_origin$CI_NoDM_up <- as.numeric(tbls3_origin$CI_NoDM_up)
+tbls3_anonym[c("CI_NoDM_low", "CI_NoDM_up")] <- str_split_fixed(tbls3_anonym$CI_NoDM, "-", 2)
+tbls3_anonym$CI_NoDM_low <- as.numeric(tbls3_anonym$CI_NoDM_low)
+tbls3_anonym$CI_NoDM_up <- as.numeric(tbls3_anonym$CI_NoDM_up)
 ## Rounding 1 decimal
 tbls3_origin <- tbls3_origin %>% mutate(across(where(is.numeric), ~round(., 1)))
 tbls3_anonym <- tbls3_anonym %>% mutate(across(where(is.numeric), ~round(., 1)))
-# Calculations
-## estimate within 95% CI
-tbls3_est <- data.frame(NA_col = rep(NA, 52))
-res_dmwodn = numeric(52)
-res_nodm = numeric(52)
-res = numeric(52)
+## Overlapping 95% CI
+tbls3_ci <- data.frame(NA_col = rep(NA, 1))
+res_ci_DMwoDN = numeric(1)
+res_ci_NoDM = numeric(1)
+res_ci = numeric(1)
 for(i in 1:nrow((tbls3_anonym))) {
   var = tbls3_origin$Variable[i]
-  res_dmwodn[i] <- estimate_CI(tbls3_origin$CI_dmwodn_low[i], tbls3_origin$CI_dmwodn_up[i], tbls3_anonym$perc_dmwodn[i])
-  tbls3_est[, 1] <- res_dmwodn
-  res_nodm[i] <- estimate_CI(tbls3_origin$CI_nodm_low[i], tbls3_origin$CI_nodm_up[i], tbls3_anonym$perc_nodm[i])
-  tbls3_est[, 2] <- res_nodm
-  res[i] <- estimate_CI(tbls3_origin$CI_dmwdn_low[i], tbls3_origin$CI_dmwdn_up[i], tbls3_anonym$perc_dmwdn[i]) 
-  tbls3_est[, 3] <- res
-  rownames(tbls3_est)[i] <- paste0(var)
-  colnames(tbls3_est)[1] <- paste0("Estimate_dmwodn")
-  colnames(tbls3_est)[2] <- paste0("Estimate_nodm")
-  colnames(tbls3_est)[3] <- paste0("Estimate_dmwdn")
-}
-tbls3_est$Variable <- row.names(tbls3_est)
-write.xlsx(tbls3_est, "GCKD_results_est_tbls3_specific_k11k2.xlsx")
-## overlapping 95% CI
-tbls3_ci <- data.frame(NA_col = rep(NA, 52))
-res_ci_dmwodn = numeric(52)
-res_ci_nodm = numeric(52)
-res_ci = numeric(52)
-for(i in 1:nrow((tbls3_anonym))) {
-  var = tbls3_origin$Variable[i]
-  res_ci_dmwodn[i] <- CI_overlap(tbls3_origin$CI_dmwodn_low[i], tbls3_origin$CI_dmwodn_up[i], tbls3_anonym$CI_dmwodn_low[i], tbls3_anonym$CI_dmwodn_up[i])
-  tbls3_ci[, 1] <- res_ci_dmwodn
-  res_ci_nodm[i] <- CI_overlap(tbls3_origin$CI_nodm_low[i], tbls3_origin$CI_nodm_up[i], tbls3_anonym$CI_nodm_low[i], tbls3_anonym$CI_nodm_up[i])
-  tbls3_ci[, 2] <- res_ci_nodm
-  res_ci[i] <- CI_overlap(tbls3_origin$CI_dmwdn_low[i], tbls3_origin$CI_dmwdn_up[i], tbls3_anonym$CI_dmwdn_low[i], tbls3_anonym$CI_dmwdn_up[i]) 
+  res_ci_DMwoDN[i] <- CI_overlap(tbls3_origin$CI_DMwoDN_low[i], tbls3_origin$CI_DMwoDN_up[i], tbls3_anonym$CI_DMwoDN_low[i], tbls3_anonym$CI_DMwoDN_up[i])
+  tbls3_ci[, 1] <- res_ci_DMwoDN
+  res_ci_NoDM[i] <- CI_overlap(tbls3_origin$CI_NoDM_low[i], tbls3_origin$CI_NoDM_up[i], tbls3_anonym$CI_NoDM_low[i], tbls3_anonym$CI_NoDM_up[i])
+  tbls3_ci[, 2] <- res_ci_NoDM
+  res_ci[i] <- CI_overlap(tbls3_origin$CI_DMwDN_low[i], tbls3_origin$CI_DMwDN_up[i], tbls3_anonym$CI_DMwDN_low[i], tbls3_anonym$CI_DMwDN_up[i]) 
   tbls3_ci[, 3] <- res_ci
   rownames(tbls3_ci)[i] <- paste0(var)
-  colnames(tbls3_ci)[1] <- paste0("CI_overlap_dmwodn")
-  colnames(tbls3_ci)[2] <- paste0("CI_overlap_nodm")
-  colnames(tbls3_ci)[3] <- paste0("CI_overlap_dmwdn")
+  colnames(tbls3_ci)[1] <- paste0("CI_overlap_DMwoDN")
+  colnames(tbls3_ci)[2] <- paste0("CI_overlap_NoDM")
+  colnames(tbls3_ci)[3] <- paste0("CI_overlap_DMwDN")
 }
 tbls3_ci$Variable <- row.names(tbls3_ci)
-write.xlsx(tbls3_ci, "GCKD_results_ci_tbls3_specific_k11k2.xlsx")
+## Adding 100% replicability
+tbls3_ci <- full_join(x = tbls3_total_origin, y = tbls3_ci, by = "Variable")
+tbls3_ci <- tbls3_ci %>% replace(is.na(.), 100.0)
+tbls3_ci <- subset(tbls3_ci, select = c(CI_overlap_DMwDN, CI_overlap_DMwoDN, CI_overlap_NoDM, Variable))
+write.xlsx(tbls3_ci, "tbls3_CIoverlap_strictaverage_usecase_11.xlsx")
 
-# Tbl 1 
-# Illustration of scale transformations
-GCKD_df1_o <- as_tibble(read.xlsx("GCKD_df1_origin.xlsx", sep = ";"))
-GCKD_df1 <- as_tibble(read.xlsx("GCKD_generic_k11.xlsx", sep = ";"))
-GCKD_df2 <- as_tibble(read.xlsx("GCKD_generic_k11k2.xlsx", sep = ";"))
-GCKD_df3 <- as_tibble(read.xlsx("GCKD_specific_k11.xlsx", sep = ";"))
-GCKD_df4 <- as_tibble(read.xlsx("GCKD_specific_k11k2.xlsx", sep = ";"))
-# Preprocessing
-## Marking NA
-GCKD_df1 <- GCKD_df1 %>% na_if("*")
-GCKD_df1 <- GCKD_df1 %>% na_if("NULL")
-GCKD_df1 <- GCKD_df1 %>% na_if("null")
-GCKD_df2 <- GCKD_df2 %>% na_if("*")
-GCKD_df2 <- GCKD_df2 %>% na_if("NULL")
-GCKD_df2 <- GCKD_df2 %>% na_if("null")
-GCKD_df3 <- GCKD_df3 %>% na_if("*")
-GCKD_df3 <- GCKD_df3 %>% na_if("NULL")
-GCKD_df3 <- GCKD_df3 %>% na_if("null")
-GCKD_df4 <- GCKD_df4 %>% na_if("*")
-GCKD_df4 <- GCKD_df4 %>% na_if("NULL")
-GCKD_df4 <- GCKD_df4 %>% na_if("null")
-## Data Type
-col_cat <- c("aa_stroke", "aa_myocard", "aa_hypertens", "aa_diabetes", "aa_renal", "aa_renal_stones", "aa_dialyse", 
-             "aa_ntx", "smoking", "hospital", "BL_med_raas_ace", "BL_med_raas_at1", "BL_med_raas_single", 
-             "BL_med_raas_double", "BL_med_caanta", "BL_med_bblocker", "BL_med_diuretic", "BL_med_diuretic_loop", 
-             "BL_med_diuretic_thiazid", "BL_med_diuretic_aldost", "biopsy", "ckd_diab", "ckd_vasc", "ckd_syst", 
-             "ckd_glom_prim", "ckd_interst", "ckd_heredit", "ckd_aki", "ckd_single", "ckd_obstr", "ckd_oth", 
-             "ckd_uk", "diabetes", "hypertension", "valve", "coronary", "myocard", "bypass", "ptca", "cerebrovasc", 
-             "stroke", "carotic_surg", "carotic_interv", "pavk", "amput", "ygraft", "pta", "cardiovasc", 
-             "pavk_surgery", "incl_egfr", "education")
-col_num <- c("BL_ku_sys", "BL_ku_dia", "BL_ku_map", "BL_ku_ruhepuls", "BL_creavalue", "BL_cysvalue", 
-             "BL_gfr_mdrd", "BL_gfr_ckdepi", "BL_gfr_ckdepi_cys", "BL_gfr_ckdepi_creacys", "BL_uacr")
-GCKD_df1_o <- GCKD_df1_o %>% mutate(across(all_of(col_cat), as.character))
-GCKD_df1_o <- GCKD_df1_o %>% mutate(across(all_of(col_num), as.numeric))
-GCKD_df1 <- GCKD_df1 %>% mutate(across(all_of(col_cat), as.character))
-GCKD_df1 <- GCKD_df1 %>% mutate(across(all_of(col_num), as.numeric))
-GCKD_df2 <- GCKD_df2 %>% mutate(across(all_of(col_cat), as.character))
-GCKD_df2 <- GCKD_df2 %>% mutate(across(all_of(col_num), as.numeric))
-GCKD_df3 <- GCKD_df3 %>% mutate(across(all_of(col_cat), as.character))
-GCKD_df3 <- GCKD_df3 %>% mutate(across(all_of(col_num), as.numeric))
-GCKD_df4 <- GCKD_df4 %>% mutate(across(all_of(col_cat), as.character))
-GCKD_df4 <- GCKD_df4 %>% mutate(across(all_of(col_num), as.numeric))
-## Subset non diabetic females
-GCKD_df1_o_femnd <- GCKD_df1_o %>% subset(dem_sex == "Female" & diabetes == "2")
-GCKD_df1_femnd <- GCKD_df1 %>% subset(dem_sex == "Female" & diabetes == "2")
-GCKD_df2_femnd <- GCKD_df2 %>% subset(dem_sex == "Female" & diabetes == "2")
-GCKD_df3_femnd <- GCKD_df3 %>% subset(dem_sex == "Female" & diabetes == "2")
-GCKD_df4_femnd <- GCKD_df4 %>% subset(dem_sex == "Female" & diabetes == "2")
-## age
-ggplot() + 
-  geom_histogram(data = GCKD_df1_o_femnd, aes(x = BL_age), binwidth=1, colour="white", fill="azure4")
-ggplot() + 
-  geom_density(data = GCKD_df1_o_femnd, aes(x = BL_age), colour="white", alpha = 0.5, fill="azure4")
-ggplot() +
-  geom_bar(data = subset(GCKD_df1_femnd, !is.na(GCKD_df1_femnd$BL_age)), aes(x = BL_age), colour="white", fill="indianred4")
-ggplot() +
-  geom_bar(data = subset(GCKD_df2_femnd, !is.na(GCKD_df2_femnd$BL_age)), aes(x = BL_age), colour="white", fill="indianred")
-ggplot() +
-  geom_bar(data = subset(GCKD_df3_femnd, !is.na(GCKD_df3_femnd$BL_age)), aes(x = BL_age), colour="white", fill="lightblue4")
-ggplot() +
-  geom_bar(data = subset(GCKD_df4_femnd, !is.na(GCKD_df4_femnd$BL_age)), aes(x = BL_age), colour="white", fill= "lightblue3")
-GCKD_df1_mut <- GCKD_df1_femnd
-GCKD_df1_mut$BL_age <- mapvalues(GCKD_df1_mut$BL_age, from = c("[20, 30[", "[30, 40[", "[40, 50[", "[50, 60[", "[60, 70[", "[70, 80["), to = c("25", "35", "45", "55", "65", "75"))
-GCKD_df1_mut$BL_age <- as.numeric(GCKD_df1_mut$BL_age)
-GCKD_df2_mut <- GCKD_df2_femnd
-GCKD_df2_mut$BL_age <- mapvalues(GCKD_df2_mut$BL_age, from = c("[20, 25[", "[25, 30[", "[30, 35[", "[35, 40[", "[40, 45[", "[45, 50[", "[50, 55[", "[55, 60[", "[60, 65[", "[65, 70[", "[70, 75[", "[75, 80["), to = c("22.5", "27.5", "32.5", "37.5", "42.5", "47.5", "52.5", "57.5", "62.5", "67.5", "72.5", "77.5"))
-GCKD_df2_mut$BL_age <- as.numeric(GCKD_df2_mut$BL_age)
-GCKD_df3_mut <- GCKD_df3_femnd
-GCKD_df3_mut$BL_age <- mapvalues(GCKD_df3_mut$BL_age, from = c("[20, 30[", "[30, 40[", "[40, 50[", "[50, 60[", "[60, 70[", "[70, 80["), to = c("25", "35", "45", "55", "65", "75"))
-GCKD_df3_mut$BL_age <- as.numeric(GCKD_df3_mut$BL_age)
-GCKD_df4_mut <- GCKD_df4_femnd
-GCKD_df4_mut$BL_age <- mapvalues(GCKD_df4_mut$BL_age, from = c("[20, 25[", "[25, 30[", "[30, 35[", "[35, 40[", "[40, 45[", "[45, 50[", "[50, 55[", "[55, 60[", "[60, 65[", "[65, 70[", "[70, 75["), to = c("22.5", "27.5", "32.5", "37.5", "42.5", "47.5", "52.5", "57.5", "62.5", "67.5", "72.5"))
-GCKD_df4_mut$BL_age <- as.numeric(GCKD_df4_mut$BL_age)
-ggplot() + 
-  geom_density(data = GCKD_df1_o, aes(BL_age, y = ..density..*10000), colour="white", alpha = 0.5, fill="azure4") +
-  geom_bar(data = subset(GCKD_df2_mut, !is.na(GCKD_df2_mut$BL_age)), aes(BL_age), colour="gold", width = 5, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_mut, !is.na(GCKD_df3_mut$BL_age)), aes(BL_age), colour="darkseagreen3", width = 10, fill="transparent") +
-  geom_bar(data = subset(GCKD_df1_mut, !is.na(GCKD_df1_mut$BL_age)), aes(BL_age), colour="indianred4", width = 10, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_mut, !is.na(GCKD_df4_mut$BL_age)), aes(BL_age), colour="lightblue4", width = 5, fill="transparent") +
-  scale_y_continuous(sec.axis = sec_axis(~., name = "2nd")) + 
-  scale_x_continuous(sec.axis = sec_axis(~., name = "2nd")) +
-  geom_hline(yintercept=0, linetype="solid", color="white", size=1)
-ggplot() + 
-  geom_density(data = GCKD_df1_o, aes(BL_age, y = ..density..*10000), colour="white", alpha = 0.5, fill="azure4") +
-  geom_bar(data = subset(GCKD_df2_mut, !is.na(GCKD_df2_mut$BL_age)), aes(BL_age), colour="gold", width = 5, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_mut, !is.na(GCKD_df3_mut$BL_age)), aes(BL_age), colour="darkseagreen3", width = 10, fill="transparent") +
-  geom_bar(data = subset(GCKD_df1_mut, !is.na(GCKD_df1_mut$BL_age)), aes(BL_age), colour="indianred4", width = 10, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_mut, !is.na(GCKD_df4_mut$BL_age)), aes(BL_age), colour="lightblue4", width = 5, fill="transparent") +
-  scale_y_continuous(sec.axis = sec_axis(~., name = "2nd")) + 
-  scale_x_continuous(sec.axis = sec_axis(~., name = "2nd")) +
-  geom_hline(yintercept=0, linetype="solid", color="white", size=1) + 
-  theme(axis.title.x=element_blank(),
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank())
-## Weight
-ggplot() + 
-  geom_histogram(data = GCKD_df1_o_femnd, aes(x = BL_ku_weight), binwidth=1, colour="white", fill="azure4")
-ggplot() + 
-  geom_density(data = GCKD_df1_o_femnd, aes(x = BL_ku_weight), colour="white", alpha = 0.5, fill="azure4")
-ggplot() +
-  geom_bar(data = subset(GCKD_df1_femnd, !is.na(GCKD_df1_femnd$BL_ku_weight)), aes(x = BL_ku_weight), colour="white", fill="indianred4")
-ggplot() +
-  geom_bar(data = subset(GCKD_df2_femnd, !is.na(GCKD_df2_femnd$BL_ku_weight)), aes(x = BL_ku_weight), colour="white", fill="indianred")
-ggplot() +
-  geom_bar(data = subset(GCKD_df3_femnd, !is.na(GCKD_df3_femnd$BL_ku_weight)), aes(x = BL_ku_weight), colour="white", fill="darkseagreen4")
-ggplot() +
-  geom_bar(data = subset(GCKD_df4_femnd, !is.na(GCKD_df4_femnd$BL_ku_weight)), aes(x = BL_ku_weight), colour="white", fill= "darkseagreen")
-GCKD_df1_mut <- GCKD_df1_femnd
-GCKD_df1_mut$BL_ku_weight <- mapvalues(GCKD_df1_mut$BL_ku_weight, from = c("[40, 80[", "[80, 120[", "[120, 160["), to = c("60", "100", "140"))
-GCKD_df1_mut$BL_ku_weight <- as.numeric(GCKD_df1_mut$BL_ku_weight)
-GCKD_df2_mut <- GCKD_df2_femnd
-GCKD_df2_mut$BL_ku_weight <- mapvalues(GCKD_df2_mut$BL_ku_weight, from = c("[40, 60[", "[60, 80[", "[80, 100[", "[100, 120[", "[120, 140["), to = c("50", "70", "90", "110", "130"))
-GCKD_df2_mut$BL_ku_weight <- as.numeric(GCKD_df2_mut$BL_ku_weight)
-GCKD_df3_mut <- GCKD_df3_femnd
-GCKD_df3_mut$BL_ku_weight <- mapvalues(GCKD_df3_mut$BL_ku_weight, from = c("[40, 80[", "[80, 120[", "[120, 160["), to = c("60", "100", "140"))
-GCKD_df3_mut$BL_ku_weight <- as.numeric(GCKD_df3_mut$BL_ku_weight)
-GCKD_df4_mut <- GCKD_df4_femnd
-GCKD_df4_mut$BL_ku_weight <- mapvalues(GCKD_df4_mut$BL_ku_weight, from = c("[40, 50[", "[50, 60[", "[60, 70[", "[70, 80[", "[80, 90[", "[90, 100[", "[100, 110[", "[110, 120[", "[120, 130[", "[130, 140["), to = c("45", "55", "65", "75", "85", "95", "105", "115", "125", "135"))
-GCKD_df4_mut$BL_ku_weight <- as.numeric(GCKD_df4_mut$BL_ku_weight)
-ggplot() + 
-  geom_density(data = GCKD_df1_o, aes(BL_ku_weight, y = ..density..*50000), colour="white", alpha = 0.5, fill="azure4") +
-  geom_bar(data = subset(GCKD_df2_mut, !is.na(GCKD_df2_mut$BL_ku_weight)), aes(BL_ku_weight), colour="gold", width = 20, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_mut, !is.na(GCKD_df3_mut$BL_ku_weight)), aes(BL_ku_weight), colour="darkseagreen3", width = 40, fill="transparent") +
-  geom_bar(data = subset(GCKD_df1_mut, !is.na(GCKD_df1_mut$BL_ku_weight)), aes(BL_ku_weight), colour="indianred4", width = 40, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_mut, !is.na(GCKD_df4_mut$BL_ku_weight)), aes(BL_ku_weight), colour="lightblue4", width = 10, fill="transparent") +
-  scale_y_continuous(sec.axis = sec_axis(~., name = "2nd")) + 
-  scale_x_continuous(limits = c(40, 180), sec.axis = sec_axis(~., name = "2nd")) +
-  geom_hline(yintercept=0, linetype="solid", color="white", size=1)
-ggplot() + 
-  geom_density(data = GCKD_df1_o, aes(BL_ku_weight, y = ..density..*50000), colour="white", alpha = 0.5, fill="azure4") +
-  geom_bar(data = subset(GCKD_df2_mut, !is.na(GCKD_df2_mut$BL_ku_weight)), aes(BL_ku_weight), colour="gold", width = 20, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_mut, !is.na(GCKD_df3_mut$BL_ku_weight)), aes(BL_ku_weight), colour="darkseagreen3", width = 40, fill="transparent") +
-  geom_bar(data = subset(GCKD_df1_mut, !is.na(GCKD_df1_mut$BL_ku_weight)), aes(BL_ku_weight), colour="indianred4", width = 40, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_mut, !is.na(GCKD_df4_mut$BL_ku_weight)), aes(BL_ku_weight), colour="lightblue4", width = 10, fill="transparent") +
-  scale_y_continuous(sec.axis = sec_axis(~., name = "2nd")) + 
-  scale_x_continuous(limits = c(40, 180), sec.axis = sec_axis(~., name = "2nd")) +
-  geom_hline(yintercept=0, linetype="solid", color="white", size=1) + 
-  theme(axis.title.x=element_blank(),
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank())
-## Height (for generic health data scenario)
-ggplot() + 
-  geom_histogram(data = GCKD_df1_o_femnd, aes(x = BL_ku_height_cm), binwidth=1, colour="white", fill="azure4")
-ggplot() + 
-  geom_density(data = GCKD_df1_o_femnd, aes(x = BL_ku_height_cm), colour="white", alpha = 0.5, fill="azure4")
-ggplot() +
-  geom_bar(data = subset(GCKD_df1_femnd, !is.na(GCKD_df1_femnd$BL_ku_height_cm)), aes(x = BL_ku_height_cm), colour="white", fill="indianred4")
-ggplot() +
-  geom_bar(data = subset(GCKD_df2_femnd, !is.na(GCKD_df2_femnd$BL_ku_height_cm)), aes(x = BL_ku_height_cm), colour="white", fill="indianred")
-GCKD_df1_mut <- GCKD_df1_femnd
-GCKD_df1_mut$BL_ku_height_cm <- mapvalues(GCKD_df1_mut$BL_ku_height_cm, from = c("[140, 160[", "[160, 180["), to = c("150", "170"))
-GCKD_df1_mut$BL_ku_height_cm <- as.numeric(GCKD_df1_mut$BL_ku_height_cm)
-GCKD_df2_mut <- GCKD_df2_femnd
-GCKD_df2_mut$BL_ku_height_cm <- mapvalues(GCKD_df2_mut$BL_ku_height_cm, from = c("[140, 150[", "[150, 160[", "[160, 170[", "[170, 180[", "[180, 190["), to = c("145", "155", "165", "175", "185"))
-GCKD_df2_mut$BL_ku_height_cm <- as.numeric(GCKD_df2_mut$BL_ku_height_cm)
-ggplot() + 
-  geom_density(data = GCKD_df1_o, aes(BL_ku_height_cm, y = ..density..*30000), colour="white", alpha = 0.5, fill="azure4") +
-  geom_bar(data = subset(GCKD_df2_mut, !is.na(GCKD_df2_mut$BL_ku_height_cm)), aes(BL_ku_height_cm), colour="indianred", size = 1, fill="transparent") +
-  geom_bar(data = subset(GCKD_df1_mut, !is.na(GCKD_df1_mut$BL_ku_height_cm)), aes(BL_ku_height_cm), colour="indianred4", size = 1, fill="transparent") +
-  scale_y_continuous(sec.axis = sec_axis(~., name = "2nd")) + 
-  scale_x_continuous(limits = c(140, 200), sec.axis = sec_axis(~., name = "2nd")) +
-  geom_hline(yintercept=0, linetype="solid", color="white", size=1)
-ggplot()+ 
-  geom_density(data = GCKD_df1_o, aes(BL_ku_height_cm, y = ..density..*30000), colour="white", alpha = 0.5, fill="azure4") +
-  geom_bar(data = subset(GCKD_df2_mut, !is.na(GCKD_df2_mut$BL_ku_height_cm)), aes(BL_ku_height_cm), colour="indianred", size = 1, fill="transparent") +
-  geom_bar(data = subset(GCKD_df1_mut, !is.na(GCKD_df1_mut$BL_ku_height_cm)), aes(BL_ku_height_cm), colour="indianred4", size = 1, fill="transparent") +
-  scale_y_continuous(sec.axis = sec_axis(~., name = "2nd")) + 
-  scale_x_continuous(limits = c(140, 200), sec.axis = sec_axis(~., name = "2nd")) +
-  geom_hline(yintercept=0, linetype="solid", color="white", size=1) + 
-  theme(axis.title.x=element_blank(),
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank())
-### combined with calculated height from specific use case scenario
-GCKD_df3_femnd[c("BMI_low", "BMI_up")] <- str_split_fixed(GCKD_df3_femnd$BL_ku_bmi, ", ", 2)
-GCKD_df3_femnd$BMI_low <- gsub("^.", "", as.character(GCKD_df3_femnd$BMI_low))
-GCKD_df3_femnd$BMI_low <- as.numeric(GCKD_df3_femnd$BMI_low)
-GCKD_df3_femnd$BMI_up <- gsub(".$", "", as.character(GCKD_df3_femnd$BMI_up))
-GCKD_df3_femnd$BMI_up <- as.numeric(GCKD_df3_femnd$BMI_up)
-GCKD_df3_femnd[c("weight_low", "weight_up")] <- str_split_fixed(GCKD_df3_femnd$BL_ku_weight, ", ", 2)
-GCKD_df3_femnd$weight_low <- gsub("^.", "", as.character(GCKD_df3_femnd$weight_low))
-GCKD_df3_femnd$weight_low <- as.numeric(GCKD_df3_femnd$weight_low)
-GCKD_df3_femnd$weight_up <- gsub(".$", "", as.character(GCKD_df3_femnd$weight_up))
-GCKD_df3_femnd$weight_up <- as.numeric(GCKD_df3_femnd$weight_up)
-GCKD_df3_femnd$height_cm_low_calc <- as.numeric(sqrt(GCKD_df3_femnd$weight_low/GCKD_df3_femnd$BMI_up)*100)
-GCKD_df3_femnd$height_cm_low_calc <- round(GCKD_df3_femnd$height_cm_low_calc ,digit=1)
-GCKD_df3_femnd$height_cm_up_calc <- as.numeric(sqrt(GCKD_df3_femnd$weight_up/GCKD_df3_femnd$BMI_low)*100)
-GCKD_df3_femnd$height_cm_up_calc <- round(GCKD_df3_femnd$height_cm_up_calc ,digit=1)
-GCKD_df3_femnd <- GCKD_df3_femnd %>% 
-  mutate(BL_ku_height_cm_calc = height_cm_low_calc + ((height_cm_up_calc-height_cm_low_calc)/2))
-GCKD_df3_femnd$BL_ku_height_cm_calc <- round(GCKD_df3_femnd$BL_ku_height_cm_calc, digit=2)
-table(GCKD_df3_femnd$height_cm_low_calc, GCKD_df3_femnd$height_cm_up_calc, useNA = "always")
-table(GCKD_df3_femnd$height_cm_low_calc, GCKD_df3_femnd$BL_ku_height_cm_calc, useNA = "always")
-GCKD_df4_femnd[c("BMI_low", "BMI_up")] <- str_split_fixed(GCKD_df4_femnd$BL_ku_bmi, ", ", 2)
-GCKD_df4_femnd$BMI_low <- gsub("^.", "", as.character(GCKD_df4_femnd$BMI_low))
-GCKD_df4_femnd$BMI_low <- as.numeric(GCKD_df4_femnd$BMI_low)
-GCKD_df4_femnd$BMI_up <- gsub(".$", "", as.character(GCKD_df4_femnd$BMI_up))
-GCKD_df4_femnd$BMI_up <- as.numeric(GCKD_df4_femnd$BMI_up)
-GCKD_df4_femnd[c("weight_low", "weight_up")] <- str_split_fixed(GCKD_df4_femnd$BL_ku_weight, ", ", 2)
-GCKD_df4_femnd$weight_low <- gsub("^.", "", as.character(GCKD_df4_femnd$weight_low))
-GCKD_df4_femnd$weight_low <- as.numeric(GCKD_df4_femnd$weight_low)
-GCKD_df4_femnd$weight_up <- gsub(".$", "", as.character(GCKD_df4_femnd$weight_up))
-GCKD_df4_femnd$weight_up <- as.numeric(GCKD_df4_femnd$weight_up)
-GCKD_df4_femnd$height_cm_low_calc <- as.numeric(sqrt(GCKD_df4_femnd$weight_low/GCKD_df4_femnd$BMI_up)*100)
-GCKD_df4_femnd$height_cm_low_calc <- round(GCKD_df4_femnd$height_cm_low_calc ,digit=1)
-GCKD_df4_femnd$height_cm_up_calc <- as.numeric(sqrt(GCKD_df4_femnd$weight_up/GCKD_df4_femnd$BMI_low)*100)
-GCKD_df4_femnd$height_cm_up_calc <- round(GCKD_df4_femnd$height_cm_up_calc ,digit=1)
-GCKD_df4_femnd <- GCKD_df4_femnd %>% 
-  mutate(BL_ku_height_cm_calc = height_cm_low_calc + ((height_cm_up_calc-height_cm_low_calc)/2))
-table(GCKD_df4_femnd$height_cm_low_calc, GCKD_df4_femnd$height_cm_up_calc, useNA = "always")
-table(GCKD_df4_femnd$height_cm_low_calc, GCKD_df4_femnd$BL_ku_height_cm_calc, useNA = "always")
-GCKD_df4_femnd$BL_ku_height_cm_calc <- round(GCKD_df4_femnd$BL_ku_height_cm_calc, digit=2)
-ggplot() + 
-  geom_density(data = GCKD_df1_o, aes(BL_ku_height_cm, y = ..density..*30000), colour="white", alpha = 0.5, fill="azure4") +
-  geom_bar(data = subset(GCKD_df2_mut, !is.na(GCKD_df2_mut$BL_ku_height_cm)), aes(BL_ku_height_cm), colour="gold", width = 10, fill="transparent") +
-  geom_bar(data = subset(GCKD_df1_mut, !is.na(GCKD_df1_mut$BL_ku_height_cm)), aes(BL_ku_height_cm), colour="indianred4", width = 20, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_femnd, GCKD_df3_femnd$BL_ku_height_cm_calc == 135.1), aes(BL_ku_height_cm_calc), colour="darkseagreen3", width = 55, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_femnd, GCKD_df3_femnd$BL_ku_height_cm_calc == 140.05), aes(BL_ku_height_cm_calc), colour="darkseagreen3", width = 65, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_femnd, GCKD_df3_femnd$BL_ku_height_cm_calc == 147.2), aes(BL_ku_height_cm_calc), colour="darkseagreen3", width = 65, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_femnd, GCKD_df3_femnd$BL_ku_height_cm_calc == 167.25), aes(BL_ku_height_cm_calc), colour="darkseagreen3", width = 83, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_femnd, GCKD_df3_femnd$BL_ku_height_cm_calc == 165.45), aes(BL_ku_height_cm_calc), colour="darkseagreen3", width = 69, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_femnd, GCKD_df3_femnd$BL_ku_height_cm_calc == 163.3), aes(BL_ku_height_cm_calc), colour="darkseagreen3", width = 45, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_femnd, GCKD_df3_femnd$BL_ku_height_cm_calc == 175.6), aes(BL_ku_height_cm_calc), colour="darkseagreen3", width = 50, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_femnd, GCKD_df3_femnd$BL_ku_height_cm_calc == 191.2), aes(BL_ku_height_cm_calc), colour="darkseagreen3", width = 47, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 135.75), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 45, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 142), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 28, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 142.65), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 43, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 145.45), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 39, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 149.3), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 49, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 150.9), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 23, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 152.35), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 26, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 154.35), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 30, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 155.6), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 53, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 159.5), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 19, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 160.75), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 43, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 161.7), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 51, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 162.2), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 22, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 165.85), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 28, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 167.7), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 20, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 171.5), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 23, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 174.7), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 40, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 175.5), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 20, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 176.5), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 26, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 180.25), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 17, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 186.6), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 27, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 187.65), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 37, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 199.75), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 40, fill="transparent") +
-  scale_y_continuous(sec.axis = sec_axis(~., name = "2nd")) + 
-  scale_x_continuous(limits = c(100, 220), sec.axis = sec_axis(~., name = "2nd")) +
-  geom_hline(yintercept=0, linetype="solid", color="white", size=1)
-ggplot() + 
-  geom_density(data = GCKD_df1_o, aes(BL_ku_height_cm, y = ..density..*30000), colour="white", alpha = 0.5, fill="azure4") +
-  geom_bar(data = subset(GCKD_df2_mut, !is.na(GCKD_df2_mut$BL_ku_height_cm)), aes(BL_ku_height_cm), colour="gold", width = 10, fill="transparent") +
-  geom_bar(data = subset(GCKD_df1_mut, !is.na(GCKD_df1_mut$BL_ku_height_cm)), aes(BL_ku_height_cm), colour="indianred4", width = 20, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_femnd, GCKD_df3_femnd$BL_ku_height_cm_calc == 135.1), aes(BL_ku_height_cm_calc), colour="darkseagreen3", width = 55, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_femnd, GCKD_df3_femnd$BL_ku_height_cm_calc == 140.05), aes(BL_ku_height_cm_calc), colour="darkseagreen3", width = 65, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_femnd, GCKD_df3_femnd$BL_ku_height_cm_calc == 147.2), aes(BL_ku_height_cm_calc), colour="darkseagreen3", width = 65, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_femnd, GCKD_df3_femnd$BL_ku_height_cm_calc == 167.25), aes(BL_ku_height_cm_calc), colour="darkseagreen3", width = 83, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_femnd, GCKD_df3_femnd$BL_ku_height_cm_calc == 165.45), aes(BL_ku_height_cm_calc), colour="darkseagreen3", width = 69, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_femnd, GCKD_df3_femnd$BL_ku_height_cm_calc == 163.3), aes(BL_ku_height_cm_calc), colour="darkseagreen3", width = 45, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_femnd, GCKD_df3_femnd$BL_ku_height_cm_calc == 175.6), aes(BL_ku_height_cm_calc), colour="darkseagreen3", width = 50, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_femnd, GCKD_df3_femnd$BL_ku_height_cm_calc == 191.2), aes(BL_ku_height_cm_calc), colour="darkseagreen3", width = 47, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 135.75), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 45, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 142), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 28, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 142.65), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 43, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 145.45), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 39, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 149.3), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 49, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 150.9), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 23, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 152.35), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 26, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 154.35), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 30, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 155.6), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 53, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 159.5), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 19, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 160.75), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 43, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 161.7), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 51, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 162.2), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 22, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 165.85), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 28, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 167.7), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 20, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 171.5), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 23, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 174.7), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 40, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 175.5), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 20, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 176.5), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 26, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 180.25), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 17, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 186.6), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 27, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 187.65), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 37, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_femnd, GCKD_df4_femnd$BL_ku_height_cm_calc == 199.75), aes(BL_ku_height_cm_calc), colour="lightblue4", width = 40, fill="transparent") +
-  scale_y_continuous(sec.axis = sec_axis(~., name = "2nd")) + 
-  scale_x_continuous(limits = c(100, 220), sec.axis = sec_axis(~., name = "2nd")) +
-  geom_hline(yintercept=0, linetype="solid", color="white", size=1) +
-  theme(axis.title.x=element_blank(),
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank())
-
-## BMI (for specific health data scenario)
-ggplot() + 
-  geom_histogram(data = GCKD_df1_o_femnd, aes(x = BL_ku_bmi), binwidth=1, colour="white", fill="azure4")
-ggplot() + 
-  geom_density(data = GCKD_df1_o_femnd, aes(x = BL_ku_bmi), colour="white", alpha = 0.5, fill="azure4")
-ggplot() +
-  geom_bar(data = subset(GCKD_df3_femnd, !is.na(GCKD_df3_femnd$BL_ku_bmi)), aes(x = BL_ku_bmi), colour="white", fill="darkseagreen4")
-ggplot() +
-  geom_bar(data = subset(GCKD_df4_femnd, !is.na(GCKD_df4_femnd$BL_ku_bmi)), aes(x = BL_ku_bmi), colour="white", fill="darkseagreen")
-GCKD_df3_mut <- GCKD_df3_femnd
-GCKD_df3_mut$BL_ku_bmi <- mapvalues(GCKD_df3_mut$BL_ku_bmi, from = c("[18.5, 25[", "[25, 30[", "[30, 35[", "[35, 40[", "[40, 70["), to = c("21.75", "27.5", "32.5", "37.5", "55"))
-GCKD_df3_mut$BL_ku_bmi <- as.numeric(GCKD_df3_mut$BL_ku_bmi)
-GCKD_df4_mut <- GCKD_df4_femnd
-GCKD_df4_mut$BL_ku_bmi <- mapvalues(GCKD_df4_mut$BL_ku_bmi, from = c("[18.5, 25[", "[25, 30[", "[30, 35[", "[35, 40[", "[40, 70["), to = c("21.75", "27.5", "32.5", "37.5", "55"))
-GCKD_df4_mut$BL_ku_bmi <- as.numeric(GCKD_df4_mut$BL_ku_bmi)
-ggplot() + 
-  geom_density(data = GCKD_df1_o, aes(BL_ku_bmi, y = ..density..*8000), colour="white", alpha = 0.5, fill="azure4") +
-  geom_bar(data = subset(GCKD_df4_mut, !is.na(GCKD_df4_mut$BL_ku_bmi)), aes(BL_ku_bmi), colour="darkseagreen", size = 1, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_mut, !is.na(GCKD_df3_mut$BL_ku_bmi)), aes(BL_ku_bmi), colour="darkseagreen4", size = 1, fill="transparent") +
-  scale_y_continuous(sec.axis = sec_axis(~., name = "2nd")) + 
-  scale_x_continuous(limits = c(15, 60), sec.axis = sec_axis(~., name = "2nd")) +
-  geom_hline(yintercept=0, linetype="solid", color="white", size=1)
-ggplot()+ 
-  geom_density(data = GCKD_df1_o, aes(BL_ku_bmi, y = ..density..*8000), colour="white", alpha = 0.5, fill="azure4") +
-  geom_bar(data = subset(GCKD_df4_mut, !is.na(GCKD_df4_mut$BL_ku_bmi)), aes(BL_ku_bmi), colour="darkseagreen", size = 1, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_mut, !is.na(GCKD_df3_mut$BL_ku_bmi)), aes(BL_ku_bmi), colour="darkseagreen4", size = 1, fill="transparent") +
-  scale_y_continuous(sec.axis = sec_axis(~., name = "2nd")) + 
-  scale_x_continuous(limits = c(15, 60), sec.axis = sec_axis(~., name = "2nd")) +
-  geom_hline(yintercept=0, linetype="solid", color="white", size=1) + 
-  theme(axis.title.x=element_blank(),
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank())
-ggplot() + 
-  geom_density(data = GCKD_df1_o, aes(BL_ku_bmi, y = ..density..*8000), colour="white", alpha = 0.5, fill="azure4") +
-  geom_bar(data = subset(GCKD_df4_mut, GCKD_df4_mut$BL_ku_bmi == 21.75), aes(BL_ku_bmi), colour="darkseagreen", width = 6.5, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_mut, GCKD_df4_mut$BL_ku_bmi == 55), aes(BL_ku_bmi), colour="darkseagreen", width = 30, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_mut, !is.na(GCKD_df4_mut$BL_ku_bmi) & GCKD_df4_mut$BL_ku_bmi != 21.75 & GCKD_df4_mut$BL_ku_bmi != 55), aes(BL_ku_bmi), colour="darkseagreen", width = 5, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_mut, GCKD_df3_mut$BL_ku_bmi == 21.75), aes(BL_ku_bmi), colour="darkseagreen4", width = 6.5, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_mut, GCKD_df3_mut$BL_ku_bmi == 55), aes(BL_ku_bmi), colour="darkseagreen4", width = 30, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_mut, !is.na(GCKD_df3_mut$BL_ku_bmi) & GCKD_df3_mut$BL_ku_bmi != 21.75 & GCKD_df3_mut$BL_ku_bmi != 55), aes(BL_ku_bmi), colour="darkseagreen4", width = 5, fill="transparent") +
-  scale_y_continuous(sec.axis = sec_axis(~., name = "2nd")) + 
-  scale_x_continuous(limits = c(10, 70), sec.axis = sec_axis(~., name = "2nd")) +
-  geom_hline(yintercept=0, linetype="solid", color="white", size=1)
-ggplot() + 
-  geom_density(data = GCKD_df1_o, aes(BL_ku_bmi, y = ..density..*8000), colour="white", alpha = 0.5, fill="azure4") +
-  geom_bar(data = subset(GCKD_df4_mut, GCKD_df4_mut$BL_ku_bmi == 21.75), aes(BL_ku_bmi), colour="darkseagreen", width = 6.5, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_mut, GCKD_df4_mut$BL_ku_bmi == 55), aes(BL_ku_bmi), colour="darkseagreen", width = 30, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_mut, !is.na(GCKD_df4_mut$BL_ku_bmi) & GCKD_df4_mut$BL_ku_bmi != 21.75 & GCKD_df4_mut$BL_ku_bmi != 55), aes(BL_ku_bmi), colour="darkseagreen", width = 5, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_mut, GCKD_df3_mut$BL_ku_bmi == 21.75), aes(BL_ku_bmi), colour="darkseagreen4", width = 6.5, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_mut, GCKD_df3_mut$BL_ku_bmi == 55), aes(BL_ku_bmi), colour="darkseagreen4", width = 30, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_mut, !is.na(GCKD_df3_mut$BL_ku_bmi) & GCKD_df3_mut$BL_ku_bmi != 21.75 & GCKD_df3_mut$BL_ku_bmi != 55), aes(BL_ku_bmi), colour="darkseagreen4", width = 5, fill="transparent") +
-  scale_y_continuous(sec.axis = sec_axis(~., name = "2nd")) + 
-  scale_x_continuous(limits = c(10, 70), sec.axis = sec_axis(~., name = "2nd")) +
-  geom_hline(yintercept=0, linetype="solid", color="white", size=1) + 
-  theme(axis.title.x=element_blank(),
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank())
-
-### combined with calculated BMI from generic health data scenario
-GCKD_df1_femnd[c("height_cm_low", "height_cm_up")] <- str_split_fixed(GCKD_df1_femnd$BL_ku_height_cm, ", ", 2)
-GCKD_df1_femnd$height_cm_low <- gsub("^.", "", as.character(GCKD_df1_femnd$height_cm_low))
-GCKD_df1_femnd$height_cm_low <- as.numeric(GCKD_df1_femnd$height_cm_low)
-GCKD_df1_femnd$height_cm_up <- gsub(".$", "", as.character(GCKD_df1_femnd$height_cm_up))
-GCKD_df1_femnd$height_cm_up <- as.numeric(GCKD_df1_femnd$height_cm_up)
-GCKD_df1_femnd[c("weight_low", "weight_up")] <- str_split_fixed(GCKD_df1_femnd$BL_ku_weight, ", ", 2)
-GCKD_df1_femnd$weight_low <- gsub("^.", "", as.character(GCKD_df1_femnd$weight_low))
-GCKD_df1_femnd$weight_low <- as.numeric(GCKD_df1_femnd$weight_low)
-GCKD_df1_femnd$weight_up <- gsub(".$", "", as.character(GCKD_df1_femnd$weight_up))
-GCKD_df1_femnd$weight_up <- as.numeric(GCKD_df1_femnd$weight_up)
-GCKD_df1_femnd <- GCKD_df1_femnd %>% mutate_at(c("height_cm_low"), ~na_if(., 20))
-GCKD_df1_femnd <- GCKD_df1_femnd %>% mutate_at(c("height_cm_up"), ~na_if(., 280))
-GCKD_df1_femnd <- GCKD_df1_femnd %>% mutate_at(c("weight_low"), ~na_if(., 0))
-GCKD_df1_femnd <- GCKD_df1_femnd %>% mutate_at(c("weight_up"), ~na_if(., 300))
-GCKD_df1_femnd$BMI_low_calc <- as.numeric(GCKD_df1_femnd$weight_low/(GCKD_df1_femnd$height_cm_up/100)^2)
-GCKD_df1_femnd$BMI_up_calc <- as.numeric(GCKD_df1_femnd$weight_up/(GCKD_df1_femnd$height_cm_low/100)^2)
-GCKD_df1_femnd$BMI_up_calc <- round(GCKD_df1_femnd$BMI_up_calc ,digit=1)
-GCKD_df1_femnd$BMI_low_calc <- round(GCKD_df1_femnd$BMI_low_calc ,digit=1)
-GCKD_df1_femnd <- GCKD_df1_femnd %>% 
-  mutate(BL_ku_bmi_calc = BMI_low_calc + ((BMI_up_calc-BMI_low_calc)/2))
-GCKD_df1_femnd$BL_ku_bmi_calc <- round(GCKD_df1_femnd$BL_ku_bmi_calc, digit=2)
-GCKD_df2_femnd[c("height_cm_low", "height_cm_up")] <- str_split_fixed(GCKD_df2_femnd$BL_ku_height_cm, ", ", 2)
-GCKD_df2_femnd$height_cm_low <- gsub("^.", "", as.character(GCKD_df2_femnd$height_cm_low))
-GCKD_df2_femnd$height_cm_low <- as.numeric(GCKD_df2_femnd$height_cm_low)
-GCKD_df2_femnd$height_cm_up <- gsub(".$", "", as.character(GCKD_df2_femnd$height_cm_up))
-GCKD_df2_femnd$height_cm_up <- as.numeric(GCKD_df2_femnd$height_cm_up)
-GCKD_df2_femnd[c("weight_low", "weight_up")] <- str_split_fixed(GCKD_df2_femnd$BL_ku_weight, ", ", 2)
-GCKD_df2_femnd$weight_low <- gsub("^.", "", as.character(GCKD_df2_femnd$weight_low))
-GCKD_df2_femnd$weight_low <- as.numeric(GCKD_df2_femnd$weight_low)
-GCKD_df2_femnd$weight_up <- gsub(".$", "", as.character(GCKD_df2_femnd$weight_up))
-GCKD_df2_femnd$weight_up <- as.numeric(GCKD_df2_femnd$weight_up)
-GCKD_df2_femnd <- GCKD_df2_femnd %>% mutate_at(c("height_cm_low"), ~na_if(., 20))
-GCKD_df2_femnd <- GCKD_df2_femnd %>% mutate_at(c("height_cm_up"), ~na_if(., 280))
-GCKD_df2_femnd <- GCKD_df2_femnd %>% mutate_at(c("weight_low"), ~na_if(., 0))
-GCKD_df2_femnd <- GCKD_df2_femnd %>% mutate_at(c("weight_up"), ~na_if(., 300))
-GCKD_df2_femnd$BMI_low_calc <- as.numeric(GCKD_df2_femnd$weight_low/(GCKD_df2_femnd$height_cm_up/100)^2)
-GCKD_df2_femnd$BMI_up_calc <- as.numeric(GCKD_df2_femnd$weight_up/(GCKD_df2_femnd$height_cm_low/100)^2)
-GCKD_df2_femnd$BMI_up_calc <- round(GCKD_df2_femnd$BMI_up_calc ,digit=1)
-GCKD_df2_femnd$BMI_low_calc <- round(GCKD_df2_femnd$BMI_low_calc ,digit=1)
-GCKD_df2_femnd <- GCKD_df2_femnd %>% 
-  mutate(BL_ku_bmi_calc = BMI_low_calc + ((BMI_up_calc-BMI_low_calc)/2))
-GCKD_df2_femnd$BL_ku_bmi_calc <- round(GCKD_df4_femnd$BL_ku_bmi_calc, digit=2)
-ggplot() + 
-  geom_density(data = GCKD_df1_o, aes(BL_ku_bmi, y = ..density..*10000), colour="white", alpha = 0.5, fill="azure4") +
-  geom_bar(data = subset(GCKD_df4_mut, GCKD_df4_mut$BL_ku_bmi == 21.75), aes(BL_ku_bmi), colour="lightblue4", width = 6.5, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_mut, GCKD_df4_mut$BL_ku_bmi == 55), aes(BL_ku_bmi), colour="lightblue4", width = 30, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_mut, !is.na(GCKD_df4_mut$BL_ku_bmi) & GCKD_df4_mut$BL_ku_bmi != 21.75 & GCKD_df4_mut$BL_ku_bmi != 55), aes(BL_ku_bmi), colour="lightblue4", width = 5, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_mut, GCKD_df3_mut$BL_ku_bmi == 21.75), aes(BL_ku_bmi), colour="darkseagreen3", width = 6.5, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_mut, GCKD_df3_mut$BL_ku_bmi == 55), aes(BL_ku_bmi), colour="darkseagreen3", width = 30, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_mut, !is.na(GCKD_df3_mut$BL_ku_bmi) & GCKD_df3_mut$BL_ku_bmi != 21.75 & GCKD_df3_mut$BL_ku_bmi != 55), aes(BL_ku_bmi), colour="darkseagreen3", width = 5, fill="transparent") +
-  geom_bar(data = subset(GCKD_df1_femnd, GCKD_df1_femnd$BL_ku_bmi_calc == 21.75), aes(BL_ku_bmi_calc), colour="indianred4", width = 18, fill="transparent") +
-  geom_bar(data = subset(GCKD_df1_femnd, GCKD_df1_femnd$BL_ku_bmi_calc == 28.2), aes(BL_ku_bmi_calc), colour="indianred4", width = 26, fill="transparent") +
-  geom_bar(data = subset(GCKD_df1_femnd, GCKD_df1_femnd$BL_ku_bmi_calc == 35.8), aes(BL_ku_bmi_calc), colour="indianred4", width = 19, fill="transparent") +
-  geom_bar(data = subset(GCKD_df1_femnd, GCKD_df1_femnd$BL_ku_bmi_calc == 46.2), aes(BL_ku_bmi_calc), colour="indianred4", width = 30, fill="transparent") +
-  geom_bar(data = subset(GCKD_df1_femnd, GCKD_df1_femnd$BL_ku_bmi_calc == 49.75), aes(BL_ku_bmi_calc), colour="indianred4", width = 25, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 16.55), aes(BL_ku_bmi_calc), colour="gold", width = 8, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 18.6), aes(BL_ku_bmi_calc), colour="gold", width = 10, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 21.15), aes(BL_ku_bmi_calc), colour="gold", width = 12, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 20.65), aes(BL_ku_bmi_calc), colour="gold", width = 10, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 24.2), aes(BL_ku_bmi_calc), colour="gold", width = 12, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 23.1), aes(BL_ku_bmi_calc), colour="gold", width = 9, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 26.0), aes(BL_ku_bmi_calc), colour="gold", width = 11, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 26.55), aes(BL_ku_bmi_calc), colour="gold", width = 11, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 29.5), aes(BL_ku_bmi_calc), colour="gold", width = 12, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 29.65), aes(BL_ku_bmi_calc), colour="gold", width = 11, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 33.75), aes(BL_ku_bmi_calc), colour="gold", width = 17, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 32.35), aes(BL_ku_bmi_calc), colour="gold", width = 13, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 33.4), aes(BL_ku_bmi_calc), colour="gold", width = 12, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 36.2), aes(BL_ku_bmi_calc), colour="gold", width = 12, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 37.8), aes(BL_ku_bmi_calc), colour="gold", width = 14, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 40.75), aes(BL_ku_bmi_calc), colour="gold", width = 12, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 43.3), aes(BL_ku_bmi_calc), colour="gold", width = 16, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 42.7), aes(BL_ku_bmi_calc), colour="gold", width = 12, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 46.2), aes(BL_ku_bmi_calc), colour="gold", width = 14, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 48.1), aes(BL_ku_bmi_calc), colour="gold", width = 15, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 54.55), aes(BL_ku_bmi_calc), colour="gold", width = 12, fill="transparent") +
-  scale_y_continuous(sec.axis = sec_axis(~., name = "2nd")) + 
-  scale_x_continuous(limits = c(10, 70), sec.axis = sec_axis(~., name = "2nd")) +
-  geom_hline(yintercept=0, linetype="solid", color="white", size=1)
-ggplot() + 
-  geom_density(data = GCKD_df1_o, aes(BL_ku_bmi, y = ..density..*10000), colour="white", alpha = 0.5, fill="azure4") +
-  geom_bar(data = subset(GCKD_df4_mut, GCKD_df4_mut$BL_ku_bmi == 21.75), aes(BL_ku_bmi), colour="lightblue4", width = 6.5, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_mut, GCKD_df4_mut$BL_ku_bmi == 55), aes(BL_ku_bmi), colour="lightblue4", width = 30, fill="transparent") +
-  geom_bar(data = subset(GCKD_df4_mut, !is.na(GCKD_df4_mut$BL_ku_bmi) & GCKD_df4_mut$BL_ku_bmi != 21.75 & GCKD_df4_mut$BL_ku_bmi != 55), aes(BL_ku_bmi), colour="lightblue4", width = 5, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_mut, GCKD_df3_mut$BL_ku_bmi == 21.75), aes(BL_ku_bmi), colour="darkseagreen3", width = 6.5, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_mut, GCKD_df3_mut$BL_ku_bmi == 55), aes(BL_ku_bmi), colour="darkseagreen3", width = 30, fill="transparent") +
-  geom_bar(data = subset(GCKD_df3_mut, !is.na(GCKD_df3_mut$BL_ku_bmi) & GCKD_df3_mut$BL_ku_bmi != 21.75 & GCKD_df3_mut$BL_ku_bmi != 55), aes(BL_ku_bmi), colour="darkseagreen3", width = 5, fill="transparent") +
-  geom_bar(data = subset(GCKD_df1_femnd, GCKD_df1_femnd$BL_ku_bmi_calc == 21.75), aes(BL_ku_bmi_calc), colour="indianred4", width = 18, fill="transparent") +
-  geom_bar(data = subset(GCKD_df1_femnd, GCKD_df1_femnd$BL_ku_bmi_calc == 28.2), aes(BL_ku_bmi_calc), colour="indianred4", width = 26, fill="transparent") +
-  geom_bar(data = subset(GCKD_df1_femnd, GCKD_df1_femnd$BL_ku_bmi_calc == 35.8), aes(BL_ku_bmi_calc), colour="indianred4", width = 19, fill="transparent") +
-  geom_bar(data = subset(GCKD_df1_femnd, GCKD_df1_femnd$BL_ku_bmi_calc == 46.2), aes(BL_ku_bmi_calc), colour="indianred4", width = 30, fill="transparent") +
-  geom_bar(data = subset(GCKD_df1_femnd, GCKD_df1_femnd$BL_ku_bmi_calc == 49.75), aes(BL_ku_bmi_calc), colour="indianred4", width = 25, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 16.55), aes(BL_ku_bmi_calc), colour="gold", width = 8, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 18.6), aes(BL_ku_bmi_calc), colour="gold", width = 10, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 21.15), aes(BL_ku_bmi_calc), colour="gold", width = 12, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 20.65), aes(BL_ku_bmi_calc), colour="gold", width = 10, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 24.2), aes(BL_ku_bmi_calc), colour="gold", width = 12, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 23.1), aes(BL_ku_bmi_calc), colour="gold", width = 9, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 26.0), aes(BL_ku_bmi_calc), colour="gold", width = 11, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 26.55), aes(BL_ku_bmi_calc), colour="gold", width = 11, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 29.5), aes(BL_ku_bmi_calc), colour="gold", width = 12, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 29.65), aes(BL_ku_bmi_calc), colour="gold", width = 11, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 33.75), aes(BL_ku_bmi_calc), colour="gold", width = 17, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 32.35), aes(BL_ku_bmi_calc), colour="gold", width = 13, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 33.4), aes(BL_ku_bmi_calc), colour="gold", width = 12, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 36.2), aes(BL_ku_bmi_calc), colour="gold", width = 12, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 37.8), aes(BL_ku_bmi_calc), colour="gold", width = 14, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 40.75), aes(BL_ku_bmi_calc), colour="gold", width = 12, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 43.3), aes(BL_ku_bmi_calc), colour="gold", width = 16, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 42.7), aes(BL_ku_bmi_calc), colour="gold", width = 12, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 46.2), aes(BL_ku_bmi_calc), colour="gold", width = 14, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 48.1), aes(BL_ku_bmi_calc), colour="gold", width = 15, fill="transparent") +
-  geom_bar(data = subset(GCKD_df2_femnd, GCKD_df2_femnd$BL_ku_bmi_calc == 54.55), aes(BL_ku_bmi_calc), colour="gold", width = 12, fill="transparent") +
-  scale_y_continuous(sec.axis = sec_axis(~., name = "2nd")) + 
-  scale_x_continuous(limits = c(10, 70), sec.axis = sec_axis(~., name = "2nd")) +
-  geom_hline(yintercept=0, linetype="solid", color="white", size=1)+
-  theme(axis.title.x=element_blank(),
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank())
-
-# Comparing generic purpose utility and privacy metrics
-df <- as_tibble(read.xlsx("GCKD_results_genericmetrics.xlsx", sep = ";"))
-df <- df %>% mutate(safe_avg = 100-risk_avg)
-ggplot() +
-  geom_point(data = df, aes(safe_avg, utiliy_granular, colour = factor(model)), shape = 16, size = 5) +
-  geom_point(data = df, aes(safe_avg, utiliy_discern, colour = factor(model)), shape = 17, size = 5) +
-  geom_point(data = df, aes(safe_avg, utiliy_entropy, colour = factor(model)), shape = 15, size = 5) +
-  scale_color_manual(values = c("Gen_11" = "indianred4", "Gen_11_2" = "gold", "Spec_11" = "darkseagreen3", "Spec_11_2" = "lightblue4")) +
-  scale_y_continuous(limits = c(0, 100)) + 
-  scale_x_continuous(limits = c(0, 100))
-ggplot() +
-  geom_point(data = df, aes(safe_avg, utiliy_granular, colour = factor(model)), shape = 16, size = 5) +
-  geom_point(data = df, aes(safe_avg, utiliy_discern, colour = factor(model)), shape = 17, size = 5) +
-  geom_point(data = df, aes(safe_avg, utiliy_entropy, colour = factor(model)), shape = 15, size = 5) +
-  scale_color_manual(values = c("Gen_11" = "indianred4", "Gen_11_2" = "gold", "Spec_11" = "darkseagreen3", "Spec_11_2" = "lightblue4")) +
-  scale_y_continuous(limits = c(0, 100)) + 
-  scale_x_continuous(limits = c(0, 100)) +
-  theme(axis.title.x=element_blank(),
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank(), 
-        legend.position = "none")
-
-
+# Suppl. Fig S1: visual comparison (not included) 

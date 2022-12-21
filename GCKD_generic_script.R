@@ -10,8 +10,8 @@ path_results = "C:/Users/User/OneDrive/Documents/PRIVAT/Charite/Forschung/Projek
 path_data = "D:/BackUp GCKD"
 path_tbl = "C:/Users/User/OneDrive/Documents/PRIVAT/Charite/Forschung/Projekt Computerbasierte Anonymisierung/Titzeetal/Ergebnisse/Tbl_perc_CI"
 setwd(path_data)
-GCKD_df1 <- as_tibble(read.csv("GCKD_generic_k11.csv", sep = ";"))
-#GCKD_df1 <- as_tibble(read.xlsx("GCKD_generic_k11k2.xlsx", sep = ";"))
+#GCKD_df1 <- as_tibble(read.csv("GCKD_generic_k11.csv", sep = ";"))
+GCKD_df1 <- as_tibble(read.csv("GCKD_generic_k11k2.csv", sep = ";"))
 dim(GCKD_df1) ## bmi still included 
 
 # Data Cleansing
@@ -75,6 +75,7 @@ GCKD_df1$ygraft <- mapvalues(GCKD_df1$ygraft, from = c("1", "2"), to = c("ygraft
 GCKD_df1$pavk_surgery <- mapvalues(GCKD_df1$pavk_surgery, from = c("1", "2"), to = c("pavk_surgery_yes", "pavk_surgery_no"))
 GCKD_df1$pta <- mapvalues(GCKD_df1$pta, from = c("1", "2"), to = c("pta_yes", "pta_no"))
 GCKD_df1$education <- mapvalues(GCKD_df1$education, from = c("1", "2", "3", "4"), to = c("edu_low", "edu_medium", "edu_high", "edu_uk"))
+GCKD_df1$education <- factor(GCKD_df1$education, c("edu_high", "edu_medium", "edu_low", "edu_uk"))
 col_num <- c("BL_ku_sys", "BL_ku_dia", "BL_ku_map", "BL_ku_ruhepuls", "BL_creavalue", "BL_cysvalue", 
              "BL_gfr_mdrd", "BL_gfr_ckdepi", "BL_gfr_ckdepi_cys", "BL_gfr_ckdepi_creacys", "BL_uacr")
 GCKD_df1 <- GCKD_df1 %>% mutate(across(all_of(col_num), as.numeric))
@@ -120,12 +121,12 @@ GCKD_df1_table_1 <-
   modify_spanning_header(everything() ~ NA_character_)
 GCKD_df1_table_1 %>%
   as_gt() %>%
-  gt::gtsave(filename = "tbl1_total_kanonymity_generic_11.html", 
+  gt::gtsave(filename = "tbl1_total_strictaverage_generic_11.html", 
              path = path_results)
 ### calculated values in Table 1: identical to original
 GCKD_df1_table_1 <- as_tibble(GCKD_df1_table_1)
-setwd(path_results)
-write.xlsx(GCKD_df1_table_1, "tbl1_total_kanonymity_generic_11.xlsx")
+setwd(path_tbl)
+write.xlsx(GCKD_df1_table_1, "tbl1_total_strictaverage_generic_11.xlsx")
 
 ## Table 1 subset female
 ### apart from UACR MedianCI everything included
@@ -169,7 +170,7 @@ GCKD_df1_fem_table_1 <-
   modify_spanning_header(everything() ~ NA_character_)
 GCKD_df1_fem_table_1 %>%
   as_gt() %>%
-  gt::gtsave(filename = "GCKD_kanonymity_generic_11_table_1_fem.html", 
+  gt::gtsave(filename = "GCKD_strictaverage_generic_11_table_1_fem.html", 
              path = path_results)
 ## UACR median CI calculation
 GCKD_df1_fem_d <- GCKD_df1_fem %>% subset(diabetes == "diabetes_yes")
@@ -187,7 +188,7 @@ GCKD_df1_fem_table_1 <- as_tibble(GCKD_df1_fem_table_1)
 GCKD_df1_fem_table_1$CI_female_d[GCKD_df1_fem_table_1$Variable == "BL_uacr"] <- UACR_CI_fem_d
 GCKD_df1_fem_table_1$CI_female_nd[GCKD_df1_fem_table_1$Variable == "BL_uacr"] <- UACR_CI_fem_nd
 setwd(path_tbl)
-write.xlsx(GCKD_df1_fem_table_1, "tbl1_female_kanonymity_generic_11.xlsx")
+write.xlsx(GCKD_df1_fem_table_1, "tbl1_female_strictaverage_generic_11.xlsx")
 
 ### Table 1 subset male
 GCKD_df1_male <- GCKD_df1 %>% subset(dem_sex == "Male")
@@ -224,7 +225,7 @@ GCKD_df1_male_table_1 <-
   modify_spanning_header(everything() ~ NA_character_)
 GCKD_df1_male_table_1 %>%
   as_gt() %>%
-  gt::gtsave(filename = "GCKD_kanonymity_generic_11_table_1_male.html", 
+  gt::gtsave(filename = "GCKD_kanonymity_strictaverage_11_table_1_male.html", 
              path = path_results)
 ## UACR median CI calculation
 GCKD_df1_male_d <- GCKD_df1_male %>% subset(diabetes == "diabetes_yes")
@@ -242,7 +243,7 @@ GCKD_df1_male_table_1 <- as_tibble(GCKD_df1_male_table_1)
 GCKD_df1_male_table_1$CI_male_d[GCKD_df1_male_table_1$Variable == "BL_uacr"] <- UACR_CI_male_d
 GCKD_df1_male_table_1$CI_male_nd[GCKD_df1_male_table_1$Variable == "BL_uacr"] <- UACR_CI_male_nd
 setwd(path_tbl)
-write.xlsx(GCKD_df1_fem_table_1, "tbl1_male_kanonymity_generic_11.xlsx")
+write.xlsx(GCKD_df1_fem_table_1, "tbl1_male_strictaverage_generic_11.xlsx")
 
 ## Table 1 merge subsets
 tbl1_female_male_anonym <- full_join(x = GCKD_df1_male_table_1, y = GCKD_df1_fem_table_1, by = "Variable")
@@ -252,7 +253,7 @@ tbl1_anonym <- subset(tbl1_total_female_male_anonym, !(endsWith(tbl1_total_femal
                         tbl1_total_female_male_anonym$Variable != "Female" &
                         (!is.na(tbl1_total_female_male_anonym$n_mean_female_d) | !is.na(tbl1_total_female_male_anonym$n_mean_male_d)))
 setwd(path_tbl)
-write.xlsx(tbl1_anonym, "tbl1_kanonymity_generic_11.xlsx")
+write.xlsx(tbl1_anonym, "tbl1_strictaverage_generic_11.xlsx")
 
 ### illustration of parameters with change in datatype for total: age, height, weight
 GCKD_df1_QI_cat <- select(GCKD_df1, BL_age, BL_ku_height_cm, BL_ku_weight)
@@ -600,7 +601,7 @@ GCKD_df1_table_2 <-
   modify_spanning_header(everything() ~ NA_character_)
 GCKD_df1_table_2 %>%
   as_gt() %>%
-  gt::gtsave(filename = "GCKD_generic_k11k2_table_2.html", 
+  gt::gtsave(filename = "GCKD_strictaverage_k11k2_table_2.html", 
              path = path_results)
 GCKD_df1_table_2 <- as_tibble(GCKD_df1_table_2)
 
@@ -653,7 +654,7 @@ tbl2_anonym <- subset(tbl2_cardiovasc_60, !(endsWith(tbl2_cardiovasc_60$Variable
                         tbl2_cardiovasc_60$Variable != "Female" &
                         (!is.na(tbl2_cardiovasc_60$n_mean_egfr) | !is.na(tbl2_cardiovasc_60$n_mean_prot)))
 setwd(path_tbl)
-write.xlsx(tbl2_anonym, "tbl2_kanonymity_generic_11.xlsx")
+write.xlsx(tbl2_anonym, "tbl2_strictaverage_generic_11.xlsx")
 
 
 ### illustration of parameters with change in datatype: age
@@ -743,17 +744,17 @@ GCKD_df1_table_3 <-
   modify_spanning_header(everything() ~ NA_character_)
 GCKD_df1_table_3 %>%
   as_gt() %>%
-  gt::gtsave(filename = "GCKD_generic_k11k2_table_3.html", 
+  gt::gtsave(filename = "GCKD_generic_strictaverage_table_3.html", 
              path = path_results)
 GCKD_df1_table_3b <- as_tibble(GCKD_df1_table_3b)
-setwd(path_results)
-write.xlsx(GCKD_df1_table_3b, "tbl3_kanonymity_generic_11.xlsx")
+setwd(path_tbl)
+write.xlsx(GCKD_df1_table_3b, "tbl3_strictaverage_generic_11.xlsx")
 
 ## Figure 3: Patient awareness and treatment
-### identical to original data
+### identical to original data apart from age calculation
 
 ## Table 4: Cardiovascular disease: identical to original
-### calculated values in Table 4
+### Cardiovasc - age calculations
 #### k11
 GCKD_df1_less60 <- GCKD_df1 %>% subset(GCKD_df1$BL_age == "[50, 60[" | GCKD_df1$BL_age == "[40, 50[" | GCKD_df1$BL_age == "[30, 40[" | GCKD_df1$BL_age == "[20, 30[")
 GCKD_df1_more60 <- GCKD_df1 %>% subset(GCKD_df1$BL_age == "[60, 70[" | GCKD_df1$BL_age == "[70, 80[")
@@ -761,10 +762,28 @@ GCKD_df1_more60 <- GCKD_df1 %>% subset(GCKD_df1$BL_age == "[60, 70[" | GCKD_df1$
 GCKD_df1_less60 <- GCKD_df1 %>% subset(GCKD_df1$BL_age == "[20, 25[" | GCKD_df1$BL_age == "[25, 30[" | GCKD_df1$BL_age == "[30, 35[" | GCKD_df1$BL_age == "[35, 40[" | GCKD_df1$BL_age == "[40, 45[" | GCKD_df1$BL_age == "[45, 50[" | GCKD_df1$BL_age == "[50, 55[" | GCKD_df1$BL_age == "[55, 60[")
 GCKD_df1_more60 <- GCKD_df1 %>% subset(GCKD_df1$BL_age == "[60, 65[" | GCKD_df1$BL_age == "[65, 70[" | GCKD_df1$BL_age == "[70, 75[" | GCKD_df1$BL_age == "[75, 80[")
 #### all
-table(GCKD_df1_less60$cardiovasc == "1",  useNA = "always") 
-BinomCI(x=sum(GCKD_df1_less60$cardiovasc == "1", na.rm=TRUE), n=sum(!is.na(GCKD_df1_less60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_more60$cardiovasc == "1",  useNA = "always")
-BinomCI(x=sum(GCKD_df1_more60$cardiovasc == "1", na.rm=TRUE), n=sum(!is.na(GCKD_df1_more60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_less60_yes <- sum(!is.na(GCKD_df1_less60$cardiovasc) & GCKD_df1_less60$cardiovasc == "cardiovasc_yes")
+cardiovasc_less60_yes_BinomCI <- BinomCI(x=sum(GCKD_df1_less60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                         n=sum(!is.na(GCKD_df1_less60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_less60_yes_perc <-round(cardiovasc_less60_yes_BinomCI[1], 1)
+cardiovasc_less60_yes_CI_low <- round(cardiovasc_less60_yes_BinomCI[2], 1)
+cardiovasc_less60_yes_CI_high <-round(cardiovasc_less60_yes_BinomCI[3], 1)
+cardiovasc_less60_yes_CI <- paste(cardiovasc_less60_yes_CI_low, cardiovasc_less60_yes_CI_high, sep="-")
+cardiovasc_more60_yes <- sum(!is.na(GCKD_df1_more60$cardiovasc) & GCKD_df1_more60$cardiovasc == "cardiovasc_yes")
+cardiovasc_more60_yes_BinomCI <- BinomCI(x=sum(GCKD_df1_more60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                         n=sum(!is.na(GCKD_df1_more60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_more60_yes_perc <-round(cardiovasc_more60_yes_BinomCI[1], 1)
+cardiovasc_more60_yes_CI_low <- round(cardiovasc_more60_yes_BinomCI[2], 1)
+cardiovasc_more60_yes_CI_high <-round(cardiovasc_more60_yes_BinomCI[3], 1)
+cardiovasc_more60_yes_CI <- paste(cardiovasc_more60_yes_CI_low, cardiovasc_more60_yes_CI_high, sep="-")
+#### build dataframe
+Variable <- c("cardiovasc_less60_yes", "cardiovasc_more60_yes")
+n_total <- c(cardiovasc_less60_yes, cardiovasc_more60_yes)
+perc_total <- c(cardiovasc_less60_yes_perc, cardiovasc_more60_yes_perc)
+CI_total <- c(cardiovasc_less60_yes_CI, cardiovasc_more60_yes_CI)
+tbl4_cardiovasc_60 <- data.frame(Variable, n_total, perc_total, CI_total)
+setwd(path_tbl)
+write.xlsx(tbl4_cardiovasc_60, "tbl4_total_strictaverage_generic_11.xlsx")
 
 ## Table 4 subset female
 var_table_4 <- c("dem_sex", "diabetes", "cardiovasc", "hypertension", "valve", "coronary", "myocard", "bypass", "ptca", "cerebrovasc", 
@@ -798,12 +817,9 @@ GCKD_df1_fem_table_4 <-
   modify_spanning_header(everything() ~ NA_character_)
 GCKD_df1_fem_table_4 %>%
   as_gt() %>%
-  gt::gtsave(filename = "GCKD_generic_k11k2_table_4_fem.html", 
+  gt::gtsave(filename = "GCKD_strictaverage_k11_table_4_fem.html", 
              path = path_results)
-GCKD_df1_fem_table_4 <- as_tibble(GCKD_df1_fem_table_4)
-setwd(path_results)
-write.xlsx(GCKD_df1_fem_table_4, "tbl4_female_kanonymity_generic_11.xlsx")
-### calculated values in Table 4 subset female
+### Cardiovasc - age calculation
 #### k11
 GCKD_df1_fem_less60 <- GCKD_df1_fem %>% subset(GCKD_df1_fem$BL_age == "[50, 60[" | GCKD_df1_fem$BL_age == "[40, 50[" | GCKD_df1_fem$BL_age == "[30, 40[" | GCKD_df1_fem$BL_age == "[20, 30[")
 GCKD_df1_fem_more60 <- GCKD_df1_fem %>% subset(GCKD_df1_fem$BL_age == "[60, 70[" | GCKD_df1_fem$BL_age == "[70, 80[")
@@ -811,12 +827,44 @@ GCKD_df1_fem_more60 <- GCKD_df1_fem %>% subset(GCKD_df1_fem$BL_age == "[60, 70["
 GCKD_df1_fem_less60 <- GCKD_df1_fem %>% subset(GCKD_df1_fem$BL_age == "[20, 25[" | GCKD_df1_fem$BL_age == "[25, 30[" | GCKD_df1_fem$BL_age == "[30, 35[" | GCKD_df1_fem$BL_age == "[35, 40[" | GCKD_df1_fem$BL_age == "[40, 45[" | GCKD_df1_fem$BL_age == "[45, 50[" | GCKD_df1_fem$BL_age == "[50, 55[" | GCKD_df1_fem$BL_age == "[55, 60[")
 GCKD_df1_fem_more60 <- GCKD_df1_fem %>% subset(GCKD_df1_fem$BL_age == "[60, 65[" | GCKD_df1_fem$BL_age == "[65, 70[" | GCKD_df1_fem$BL_age == "[70, 75[" | GCKD_df1_fem$BL_age == "[75, 80[")
 #### all
-table(GCKD_df1_fem_less60$diabetes, GCKD_df1_fem_less60$cardiovasc == 1,  useNA = "always")  
-BinomCI(x=sum(GCKD_df1_fem_less60$diabetes == "1" & GCKD_df1_fem_less60$cardiovasc == "1", na.rm=TRUE), n=sum(GCKD_df1_fem_less60$diabetes == "1" & !is.na(GCKD_df1_fem_less60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_fem_less60$diabetes == "2" & GCKD_df1_fem_less60$cardiovasc == "1", na.rm=TRUE), n=sum(GCKD_df1_fem_less60$diabetes == "2" & !is.na(GCKD_df1_fem_less60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_fem_more60$diabetes, GCKD_df1_fem_more60$cardiovasc == 1,  useNA = "always")  
-BinomCI(x=sum(GCKD_df1_fem_more60$diabetes == "1" & GCKD_df1_fem_more60$cardiovasc == "1", na.rm=TRUE), n=sum(GCKD_df1_fem_more60$diabetes == "1" & !is.na(GCKD_df1_fem_more60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_fem_more60$diabetes == "2" & GCKD_df1_fem_more60$cardiovasc == "1", na.rm=TRUE), n=sum(GCKD_df1_fem_more60$diabetes == "2" & !is.na(GCKD_df1_fem_more60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_less60_yes_d <- sum(!is.na(GCKD_df1_fem_less60$cardiovasc) & GCKD_df1_fem_less60$cardiovasc == "cardiovasc_yes" & GCKD_df1_fem_less60$diabetes == "diabetes_yes")
+cardiovasc_less60_yes_d_BinomCI <- BinomCI(x=sum(GCKD_df1_fem_less60$diabetes == "diabetes_yes" & GCKD_df1_fem_less60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                           n=sum(GCKD_df1_fem_less60$diabetes == "diabetes_yes" &!is.na(GCKD_df1_fem_less60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_less60_yes_perc_d <-round(cardiovasc_less60_yes_d_BinomCI[1], 1)
+cardiovasc_less60_yes_CI_low_d <- round(cardiovasc_less60_yes_d_BinomCI[2], 1)
+cardiovasc_less60_yes_CI_high_d <-round(cardiovasc_less60_yes_d_BinomCI[3], 1)
+cardiovasc_less60_yes_CI_d <- paste(cardiovasc_less60_yes_CI_low_d, cardiovasc_less60_yes_CI_high_d, sep="-")
+cardiovasc_less60_yes_nd <- sum(!is.na(GCKD_df1_fem_less60$cardiovasc) & GCKD_df1_fem_less60$cardiovasc == "cardiovasc_yes" & GCKD_df1_fem_less60$diabetes == "diabetes_no")
+cardiovasc_less60_yes_nd_BinomCI <- BinomCI(x=sum(GCKD_df1_fem_less60$diabetes == "diabetes_no" & GCKD_df1_fem_less60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                            n=sum(GCKD_df1_fem_less60$diabetes == "diabetes_no" & !is.na(GCKD_df1_fem_less60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_less60_yes_perc_nd <-round(cardiovasc_less60_yes_nd_BinomCI[1], 1)
+cardiovasc_less60_yes_CI_low_nd <- round(cardiovasc_less60_yes_nd_BinomCI[2], 1)
+cardiovasc_less60_yes_CI_high_nd <-round(cardiovasc_less60_yes_nd_BinomCI[3], 1)
+cardiovasc_less60_yes_CI_nd <- paste(cardiovasc_less60_yes_CI_low_nd, cardiovasc_less60_yes_CI_high_nd, sep="-")
+cardiovasc_more60_yes_d <- sum(!is.na(GCKD_df1_fem_more60$cardiovasc) & GCKD_df1_fem_more60$cardiovasc == "cardiovasc_yes" & GCKD_df1_fem_more60$diabetes == "diabetes_yes")
+cardiovasc_more60_yes_d_BinomCI <- BinomCI(x=sum(GCKD_df1_fem_more60$diabetes == "diabetes_yes" & GCKD_df1_fem_more60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                           n=sum(GCKD_df1_fem_more60$diabetes == "diabetes_yes" &!is.na(GCKD_df1_fem_more60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_more60_yes_perc_d <-round(cardiovasc_more60_yes_d_BinomCI[1], 1)
+cardiovasc_more60_yes_CI_low_d <- round(cardiovasc_more60_yes_d_BinomCI[2], 1)
+cardiovasc_more60_yes_CI_high_d <-round(cardiovasc_more60_yes_d_BinomCI[3], 1)
+cardiovasc_more60_yes_CI_d <- paste(cardiovasc_more60_yes_CI_low_d, cardiovasc_more60_yes_CI_high_d, sep="-")
+cardiovasc_more60_yes_nd <- sum(!is.na(GCKD_df1_fem_more60$cardiovasc) & GCKD_df1_fem_more60$cardiovasc == "cardiovasc_yes" & GCKD_df1_fem_more60$diabetes == "diabetes_no")
+cardiovasc_more60_yes_nd_BinomCI <- BinomCI(x=sum(GCKD_df1_fem_more60$diabetes == "diabetes_no" & GCKD_df1_fem_more60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                            n=sum(GCKD_df1_fem_more60$diabetes == "diabetes_no" & !is.na(GCKD_df1_fem_more60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_more60_yes_perc_nd <-round(cardiovasc_more60_yes_nd_BinomCI[1], 1)
+cardiovasc_more60_yes_CI_low_nd <- round(cardiovasc_more60_yes_nd_BinomCI[2], 1)
+cardiovasc_more60_yes_CI_high_nd <-round(cardiovasc_more60_yes_nd_BinomCI[3], 1)
+cardiovasc_more60_yes_CI_nd <- paste(cardiovasc_more60_yes_CI_low_nd, cardiovasc_more60_yes_CI_high_nd, sep="-")
+### clean and combine data
+GCKD_df1_fem_table_4 <- as_tibble(GCKD_df1_fem_table_4)
+Cardiovasc_less60_yes <- c("cardiovasc_less60_yes", cardiovasc_less60_yes_d, cardiovasc_less60_yes_nd, cardiovasc_less60_yes_perc_d, cardiovasc_less60_yes_CI_d, 
+                           cardiovasc_less60_yes_perc_nd, cardiovasc_less60_yes_CI_nd)
+Cardiovasc_more60_yes <- c("cardiovasc_more60_yes", cardiovasc_more60_yes_d, cardiovasc_more60_yes_nd, cardiovasc_more60_yes_perc_d, cardiovasc_more60_yes_CI_d, 
+                           cardiovasc_more60_yes_perc_nd, cardiovasc_more60_yes_CI_nd)
+tbl4_cardiovasc_less60_fem <- rbind(GCKD_df1_fem_table_4, Cardiovasc_less60_yes)
+tbl4_cardiovasc_60_fem <- rbind(tbl4_cardiovasc_less60_fem, Cardiovasc_more60_yes)
+setwd(path_tbl)
+write.xlsx(GCKD_df1_fem_table_4, "tbl4_female_strictaverage_generic_11.xlsx")
 
 ## Table 4 subset male
 GCKD_df1_male <- GCKD_df1 %>% subset(dem_sex == "Male")
@@ -848,12 +896,9 @@ GCKD_df1_male_table_4 <-
   modify_spanning_header(everything() ~ NA_character_)
 GCKD_df1_male_table_4 %>%
   as_gt() %>%
-  gt::gtsave(filename = "GCKD_generic_k11k2_table_4_male.html", 
+  gt::gtsave(filename = "tbl4_male_strictaverage_generic_11.html", 
              path = path_results)
-GCKD_df1_male_table_4 <- as_tibble(GCKD_df1_male_table_4)
-setwd(path_results)
-write.xlsx(GCKD_df1_male_table_4, "tbl4_male_kanonymity_generic_11.xlsx")
-### calculated values in Table 4 subset male
+### Cardiovasc - age calculations
 #### k11
 GCKD_df1_male_less60 <- GCKD_df1_male %>% subset(GCKD_df1_male$BL_age == "[50, 60[" | GCKD_df1_male$BL_age == "[40, 50[" | GCKD_df1_male$BL_age == "[30, 40[" | GCKD_df1_male$BL_age == "[20, 30[")
 GCKD_df1_male_more60 <- GCKD_df1_male %>% subset(GCKD_df1_male$BL_age == "[60, 70[" | GCKD_df1_male$BL_age == "[70, 80[")
@@ -861,12 +906,55 @@ GCKD_df1_male_more60 <- GCKD_df1_male %>% subset(GCKD_df1_male$BL_age == "[60, 7
 GCKD_df1_male_less60 <- GCKD_df1_male %>% subset(GCKD_df1_male$BL_age == "[20, 25[" | GCKD_df1_male$BL_age == "[25, 30[" | GCKD_df1_male$BL_age == "[30, 35[" | GCKD_df1_male$BL_age == "[35, 40[" | GCKD_df1_male$BL_age == "[40, 45[" | GCKD_df1_male$BL_age == "[45, 50[" | GCKD_df1_male$BL_age == "[50, 55[" | GCKD_df1_male$BL_age == "[55, 60[")
 GCKD_df1_male_more60 <- GCKD_df1_male %>% subset(GCKD_df1_male$BL_age == "[60, 65[" | GCKD_df1_male$BL_age == "[65, 70[" | GCKD_df1_male$BL_age == "[70, 75[" | GCKD_df1_male$BL_age == "[75, 80[")
 #### all
-table(GCKD_df1_male_less60$diabetes, GCKD_df1_male_less60$cardiovasc == 1,  useNA = "always")  
-BinomCI(x=sum(GCKD_df1_male_less60$diabetes == "1" & GCKD_df1_male_less60$cardiovasc == "1", na.rm=TRUE), n=sum(GCKD_df1_male_less60$diabetes == "1" & !is.na(GCKD_df1_male_less60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_male_less60$diabetes == "2" & GCKD_df1_male_less60$cardiovasc == "1", na.rm=TRUE), n=sum(GCKD_df1_male_less60$diabetes == "2" & !is.na(GCKD_df1_male_less60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
-table(GCKD_df1_male_more60$diabetes, GCKD_df1_male_more60$cardiovasc == 1,  useNA = "always")  
-BinomCI(x=sum(GCKD_df1_male_more60$diabetes == "1" & GCKD_df1_male_more60$cardiovasc == "1", na.rm=TRUE), n=sum(GCKD_df1_male_more60$diabetes == "1" & !is.na(GCKD_df1_male_more60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
-BinomCI(x=sum(GCKD_df1_male_more60$diabetes == "2" & GCKD_df1_male_more60$cardiovasc == "1", na.rm=TRUE), n=sum(GCKD_df1_male_more60$diabetes == "2" & !is.na(GCKD_df1_male_more60$cardiovasc)), method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_less60_yes_d <- sum(!is.na(GCKD_df1_male_less60$cardiovasc) & GCKD_df1_male_less60$cardiovasc == "cardiovasc_yes" & GCKD_df1_male_less60$diabetes == "diabetes_yes")
+cardiovasc_less60_yes_d_BinomCI <- BinomCI(x=sum(GCKD_df1_male_less60$diabetes == "diabetes_yes" & GCKD_df1_male_less60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                           n=sum(GCKD_df1_male_less60$diabetes == "diabetes_yes" &!is.na(GCKD_df1_male_less60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_less60_yes_perc_d <-round(cardiovasc_less60_yes_d_BinomCI[1], 1)
+cardiovasc_less60_yes_CI_low_d <- round(cardiovasc_less60_yes_d_BinomCI[2], 1)
+cardiovasc_less60_yes_CI_high_d <-round(cardiovasc_less60_yes_d_BinomCI[3], 1)
+cardiovasc_less60_yes_CI_d <- paste(cardiovasc_less60_yes_CI_low_d, cardiovasc_less60_yes_CI_high_d, sep="-")
+cardiovasc_less60_yes_nd <- sum(!is.na(GCKD_df1_male_less60$cardiovasc) & GCKD_df1_male_less60$cardiovasc == "cardiovasc_yes" & GCKD_df1_male_less60$diabetes == "diabetes_no")
+cardiovasc_less60_yes_nd_BinomCI <- BinomCI(x=sum(GCKD_df1_male_less60$diabetes == "diabetes_no" & GCKD_df1_male_less60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                            n=sum(GCKD_df1_male_less60$diabetes == "diabetes_no" & !is.na(GCKD_df1_male_less60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_less60_yes_perc_nd <-round(cardiovasc_less60_yes_nd_BinomCI[1], 1)
+cardiovasc_less60_yes_CI_low_nd <- round(cardiovasc_less60_yes_nd_BinomCI[2], 1)
+cardiovasc_less60_yes_CI_high_nd <-round(cardiovasc_less60_yes_nd_BinomCI[3], 1)
+cardiovasc_less60_yes_CI_nd <- paste(cardiovasc_less60_yes_CI_low_nd, cardiovasc_less60_yes_CI_high_nd, sep="-")
+cardiovasc_more60_yes_d <- sum(!is.na(GCKD_df1_male_more60$cardiovasc) & GCKD_df1_male_more60$cardiovasc == "cardiovasc_yes" & GCKD_df1_male_more60$diabetes == "diabetes_yes")
+cardiovasc_more60_yes_d_BinomCI <- BinomCI(x=sum(GCKD_df1_male_more60$diabetes == "diabetes_yes" & GCKD_df1_male_more60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                           n=sum(GCKD_df1_male_more60$diabetes == "diabetes_yes" &!is.na(GCKD_df1_male_more60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_more60_yes_perc_d <-round(cardiovasc_more60_yes_d_BinomCI[1], 1)
+cardiovasc_more60_yes_CI_low_d <- round(cardiovasc_more60_yes_d_BinomCI[2], 1)
+cardiovasc_more60_yes_CI_high_d <-round(cardiovasc_more60_yes_d_BinomCI[3], 1)
+cardiovasc_more60_yes_CI_d <- paste(cardiovasc_more60_yes_CI_low_d, cardiovasc_more60_yes_CI_high_d, sep="-")
+cardiovasc_more60_yes_nd <- sum(!is.na(GCKD_df1_male_more60$cardiovasc) & GCKD_df1_male_more60$cardiovasc == "cardiovasc_yes" & GCKD_df1_male_more60$diabetes == "diabetes_no")
+cardiovasc_more60_yes_nd_BinomCI <- BinomCI(x=sum(GCKD_df1_male_more60$diabetes == "diabetes_no" & GCKD_df1_male_more60$cardiovasc == "cardiovasc_yes", na.rm=TRUE), 
+                                            n=sum(GCKD_df1_male_more60$diabetes == "diabetes_no" & !is.na(GCKD_df1_male_more60$cardiovasc)),method="wilson") %>% '*'(100) %>% round(1)
+cardiovasc_more60_yes_perc_nd <-round(cardiovasc_more60_yes_nd_BinomCI[1], 1)
+cardiovasc_more60_yes_CI_low_nd <- round(cardiovasc_more60_yes_nd_BinomCI[2], 1)
+cardiovasc_more60_yes_CI_high_nd <-round(cardiovasc_more60_yes_nd_BinomCI[3], 1)
+cardiovasc_more60_yes_CI_nd <- paste(cardiovasc_more60_yes_CI_low_nd, cardiovasc_more60_yes_CI_high_nd, sep="-")
+### clean and combine data
+GCKD_df1_male_table_4 <- as_tibble(GCKD_df1_male_table_4)
+Cardiovasc_less60_yes <- c("cardiovasc_less60_yes", cardiovasc_less60_yes_d, cardiovasc_less60_yes_nd, cardiovasc_less60_yes_perc_d, cardiovasc_less60_yes_CI_d, 
+                           cardiovasc_less60_yes_perc_nd, cardiovasc_less60_yes_CI_nd)
+Cardiovasc_more60_yes <- c("cardiovasc_more60_yes", cardiovasc_more60_yes_d, cardiovasc_more60_yes_nd, cardiovasc_more60_yes_perc_d, cardiovasc_more60_yes_CI_d, 
+                           cardiovasc_more60_yes_perc_nd, cardiovasc_more60_yes_CI_nd)
+tbl4_cardiovasc_less60_male <- rbind(GCKD_df1_male_table_4, Cardiovasc_less60_yes)
+tbl4_cardiovasc_60_male <- rbind(tbl4_cardiovasc_less60_male, Cardiovasc_more60_yes)
+setwd(path_tbl)
+write.xlsx(tbl4_cardiovasc_60_male, "tbl4_male_strictaverage_generic_11.xlsx")
+
+## Table 4 merge subsets
+tbl4_female_male_origin <- full_join(x = tbl4_cardiovasc_60_male, y = tbl4_cardiovasc_60_fem, by = "Variable")
+tbl4_total_female_male_origin <- full_join(x = tbl4_female_male_origin, y = tbl4_cardiovasc_60, by = "Variable")
+tbl4_origin <- subset(tbl4_total_female_male_origin, !(endsWith(tbl4_total_female_male_origin$Variable, "_no")) & 
+                        tbl4_total_female_male_origin$Variable != "(Missing)" &
+                        tbl4_total_female_male_origin$Variable != "Female" &
+                        tbl4_total_female_male_origin$Variable != "Male" &
+                        (!is.na(tbl4_total_female_male_origin$n_female_d) | !is.na(tbl4_total_female_male_origin$n_male_d)))
+setwd(path_tbl)
+write.xlsx(tbl4_origin, "tbl4_strictaverage_generic_11.xlsx")
 
 ## Suppl. Table 2: GFR categories
 ### identical to original data
@@ -880,8 +968,7 @@ GCKD_df1_table_s3a <-
   select(all_of(var_table_s3)) %>%
   tbl_summary(
     by = DM,
-    statistic = list(all_continuous() ~ "{mean}",
-                     all_categorical() ~ "{n}"),
+    statistic = list(all_categorical() ~ "{n}"),
     digits = all_continuous() ~ 1,
     missing_text = "(Missing)") %>%
   modify_header(label = "Variable", stat_1 = "n_mean_DMwDN", stat_2 = "n_mean_DMwoDN", stat_3 = "n_mean_NoDM") %>%
@@ -891,8 +978,7 @@ GCKD_df1_table_s3b <-
   select(all_of(var_table_s3)) %>%
   tbl_summary(
     by = DM,
-    statistic = list(all_continuous() ~ "{sd}",
-                     all_categorical() ~ "{p}"),
+    statistic = list(all_categorical() ~ "{p}"),
     digits = ~ 1,
     missing_text = "(Missing)") %>%
   add_ci(statistic=list(all_categorical() ~ "{conf.low}-{conf.high}", all_continuous() ~ "{conf.low}-{conf.high}"),
@@ -905,12 +991,16 @@ GCKD_df1_table_s3 <-
   modify_spanning_header(everything() ~ NA_character_)
 GCKD_df1_table_s3 %>%
   as_gt() %>%
-  gt::gtsave(filename = "GCKD_generic_k11k2_table_s3.html", 
+  gt::gtsave(filename = "GCKD_strictaverage_k11_table_s3.html", 
              path = path_results)
-GCKD_df1_table_s3 <- as_tibble(GCKD_df1_table_s3)
-setwd(path_results)
-write.xlsx(GCKD_df1_table_s3, "tbls3_kanonymity_generic_11.xlsx")
 ### calculated values in Table S3: identical to original
+GCKD_df1_table_s3 <- as_tibble(GCKD_df1_table_s3)
+tbls3_anonym <- subset(GCKD_df1_table_s3, !(endsWith(GCKD_df1_table_s3$Variable, "_no")) & 
+                         GCKD_df1_table_s3$Variable != "(Missing)" &
+                         (!is.na(GCKD_df1_table_s3$n_mean_DMwDN) | !is.na(GCKD_df1_table_s3$n_mean_DMwoDN)))
+setwd(path_tbl)
+write.xlsx(tbls3_anonym, "tbls3_strictaverage_generic_11.xlsx")
+
 ### illustration of parameters with change in datatype: age, height, weight
 GCKD_df1_dmwdn <- GCKD_df1 %>% subset(DM == "DMwDN")
 GCKD_df1_QI_cat_dmwdn <- select(GCKD_df1_dmwdn, BL_age, BL_ku_height_cm, BL_ku_weight)

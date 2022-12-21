@@ -557,6 +557,7 @@ write.xlsx(tbls3_ci, "GCKD_results_ci_tbls3_specific_k11k2.xlsx")
 
 # Tbl 1 
 # Illustration of scale transformations
+setwd(path_data)
 GCKD_df1_o <- as_tibble(read.xlsx("GCKD_df1_origin.xlsx", sep = ";"))
 GCKD_df1 <- as_tibble(read.xlsx("GCKD_generic_k11.xlsx", sep = ";"))
 GCKD_df2 <- as_tibble(read.xlsx("GCKD_generic_k11k2.xlsx", sep = ";"))
@@ -1045,6 +1046,140 @@ ggplot() +
         axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank())
+
+# Suppl. figure FigS1
+GCKD_df1_o_FigS1 <- GCKD_df1_o
+GCKD_df1_o_FigS1 <- GCKD_df1_o_FigS1 %>% mutate(
+  BL_age_cat = ifelse(GCKD_df1_o_FigS1$BL_age < 20, 1, ifelse(GCKD_df1_o_FigS1$BL_age >= 20 & GCKD_df1_o_FigS1$BL_age < 30, 2, ifelse(
+    GCKD_df1_o_FigS1$BL_age >= 30 & GCKD_df1_o_FigS1$BL_age < 40, 3, ifelse(GCKD_df1_o_FigS1$BL_age >= 40 & GCKD_df1_o_FigS1$BL_age < 50, 4, ifelse(
+      GCKD_df1_o_FigS1$BL_age >= 50 & GCKD_df1_o_FigS1$BL_age < 60, 5, ifelse(GCKD_df1_o_FigS1$BL_age >= 60 & GCKD_df1_o_FigS1$BL_age < 70, 6, 7)))))))
+#### k11
+GCKD_df3_FigS1 <- GCKD_df3
+GCKD_df3_FigS1 <- GCKD_df3_FigS1 %>% mutate(
+  BL_age_cat = ifelse(GCKD_df3_FigS1$BL_age == "[10, 20[", 1, ifelse(GCKD_df3_FigS1$BL_age == "[20, 30[", 2, ifelse(
+    GCKD_df3_FigS1$BL_age == "[30, 40[", 3, ifelse(GCKD_df3_FigS1$BL_age == "[40, 50[", 4, ifelse(
+      GCKD_df3_FigS1$BL_age == "[50, 60[", 5, ifelse(GCKD_df3_FigS1$BL_age == "[60, 70[", 6, 7)))))))
+#### k11k2
+GCKD_df4_FigS1 <- GCKD_df4
+GCKD_df4_FigS1 <- GCKD_df4_FigS1 %>% mutate(
+  BL_age_cat = ifelse(GCKD_df4_FigS1$BL_age == "[15, 20[", 1, ifelse(GCKD_df4_FigS1$BL_age == "[20, 25[" | GCKD_df4_FigS1$BL_age == "[25, 30[", 2, ifelse(
+    GCKD_df4_FigS1$BL_age == "[30, 35[" | GCKD_df4_FigS1$BL_age == "[35, 40[", 3, ifelse(GCKD_df4_FigS1$BL_age == "[40, 45[" | GCKD_df4_FigS1$BL_age == "[45, 50[", 4, ifelse(
+      GCKD_df4_FigS1$BL_age == "[50, 55[" | GCKD_df4_FigS1$BL_age == "[55, 60[", 5, ifelse(GCKD_df4_FigS1$BL_age == "[60, 65[" | GCKD_df4_FigS1$BL_age == "[65, 70[", 6, 7)))))))
+## subset male
+ggplot() +
+  geom_bar(data = subset(GCKD_df1_o_FigS1, GCKD_df1_o_FigS1$dem_sex == "Male"), 
+           aes(BL_age_cat), colour = "white", fill = "azure4", alpha = 0.5, width = 1.0) +
+  geom_bar(data = subset(GCKD_df3_FigS1, GCKD_df3_FigS1$dem_sex == "Male"), 
+           aes(BL_age_cat), colour = "gold", fill = "transparent", width = 1.0) +
+  geom_bar(data = subset(GCKD_df4_FigS1, GCKD_df4_FigS1$dem_sex == "Male"), 
+           aes(BL_age_cat), colour = "darkseagreen4", fill = "transparent", width = 1.0) +
+  scale_y_continuous(limits=c(0,1200), breaks=c(0,300,600,900,1200)) + 
+  coord_flip() +
+  theme(aspect.ratio = 3/2)
+ggplot() +
+  geom_bar(data = subset(GCKD_df1_o_FigS1, GCKD_df1_o_FigS1$dem_sex == "Male"), 
+           aes(BL_age_cat), colour = "white", fill = "azure4", alpha = 0.5, width = 1.0) +
+  geom_bar(data = subset(GCKD_df3_FigS1, GCKD_df3_FigS1$dem_sex == "Male"), 
+           aes(BL_age_cat), colour = "gold", fill = "transparent", width = 1.0) +
+  geom_bar(data = subset(GCKD_df4_FigS1, GCKD_df4_FigS1$dem_sex == "Male"), 
+           aes(BL_age_cat), colour = "darkseagreen4", fill = "transparent", width = 1.0) +
+  scale_y_continuous(limits=c(0,1200), breaks=c(0,300,600,900,1200)) + 
+  coord_flip() +
+  theme(aspect.ratio = 3/2) + 
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+## subset female
+ggplot() +
+  geom_bar(data = subset(GCKD_df1_o_FigS1, GCKD_df1_o_FigS1$dem_sex == "Female"), 
+           aes(BL_age_cat), colour = "white", fill = "azure4", alpha = 0.5, width = 1.0) +
+  geom_bar(data = subset(GCKD_df3_FigS1, GCKD_df3_FigS1$dem_sex == "Female"), 
+           aes(BL_age_cat), colour = "gold", fill = "transparent", width = 1.0) +
+  geom_bar(data = subset(GCKD_df4_FigS1, GCKD_df4_FigS1$dem_sex == "Female"), 
+           aes(BL_age_cat), colour = "darkseagreen4", fill = "transparent", width = 1.0) +
+  scale_y_continuous(limits=c(0,1200), breaks=c(0,300,600,900,1200)) + 
+  coord_flip() +
+  theme(aspect.ratio = 3/2)
+ggplot() +
+  geom_bar(data = subset(GCKD_df1_o_FigS1, GCKD_df1_o_FigS1$dem_sex == "Female"), 
+           aes(BL_age_cat), colour = "white", fill = "azure4", alpha = 0.5, width = 1.0) +
+  geom_bar(data = subset(GCKD_df3_FigS1, GCKD_df3_FigS1$dem_sex == "Female"), 
+           aes(BL_age_cat), colour = "gold", fill = "transparent", width = 1.0) +
+  geom_bar(data = subset(GCKD_df4_FigS1, GCKD_df4_FigS1$dem_sex == "Female"), 
+           aes(BL_age_cat), colour = "darkseagreen4", fill = "transparent", width = 1.0) +
+  scale_y_continuous(limits=c(0,1200), breaks=c(0,300,600,900,1200)) + 
+  coord_flip() +
+  theme(aspect.ratio = 3/2) + 
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+## subset diabetes
+ggplot() +
+  geom_bar(data = subset(GCKD_df1_o_FigS1, GCKD_df1_o_FigS1$diabetes == "1"), 
+           aes(BL_age_cat), colour = "white", fill = "azure4", alpha = 0.5, width = 1.0) +
+  geom_bar(data = subset(GCKD_df3_FigS1, GCKD_df3_FigS1$diabetes == "1"), 
+           aes(BL_age_cat), colour = "gold", fill = "transparent", width = 1.0) +
+  geom_bar(data = subset(GCKD_df4_FigS1, GCKD_df4_FigS1$diabetes == "1"), 
+           aes(BL_age_cat), colour = "darkseagreen4", fill = "transparent", width = 1.0) +
+  scale_y_continuous(limits=c(0,1200), breaks=c(0,300,600,900,1200)) + 
+  scale_x_discrete(limits = as.character(1:7)) +
+  coord_flip() +
+  theme(aspect.ratio = 3/2)
+ggplot() +
+  geom_bar(data = subset(GCKD_df1_o_FigS1, GCKD_df1_o_FigS1$diabetes == "1"), 
+           aes(BL_age_cat), colour = "white", fill = "azure4", alpha = 0.5, width = 1.0) +
+  geom_bar(data = subset(GCKD_df3_FigS1, GCKD_df3_FigS1$diabetes == "1"), 
+           aes(BL_age_cat), colour = "gold", fill = "transparent", width = 1.0) +
+  geom_bar(data = subset(GCKD_df4_FigS1, GCKD_df4_FigS1$diabetes == "1"), 
+           aes(BL_age_cat), colour = "darkseagreen4", fill = "transparent", width = 1.0) +
+  scale_y_continuous(limits=c(0,1200), breaks=c(0,300,600,900,1200)) +  
+  scale_x_discrete(limits = as.character(1:7)) +
+  coord_flip() +
+  theme(aspect.ratio = 3/2) + 
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+## subset no diabetes
+ggplot() +
+  geom_bar(data = subset(GCKD_df1_o_FigS1, GCKD_df1_o_FigS1$diabetes == "2"), 
+           aes(BL_age_cat), colour = "white", fill = "azure4", alpha = 0.5, width = 1.0) +
+  geom_bar(data = subset(GCKD_df3_FigS1, GCKD_df3_FigS1$diabetes == "2"), 
+           aes(BL_age_cat), colour = "gold", fill = "transparent", width = 1.0) +
+  geom_bar(data = subset(GCKD_df4_FigS1, GCKD_df4_FigS1$diabetes == "2"), 
+           aes(BL_age_cat), colour = "darkseagreen4", fill = "transparent", width = 1.0) +
+  scale_y_continuous(limits=c(0,1200), breaks=c(0,300,600,900,1200)) +  
+  scale_x_discrete(limits = as.character(1:7)) +
+  coord_flip() +
+  theme(aspect.ratio = 3/2)
+ggplot() +
+  geom_bar(data = subset(GCKD_df1_o_FigS1, GCKD_df1_o_FigS1$diabetes == "2"), 
+           aes(BL_age_cat), colour = "white", fill = "azure4", alpha = 0.5, width = 1.0) +
+  geom_bar(data = subset(GCKD_df3_FigS1, GCKD_df3_FigS1$diabetes == "2"), 
+           aes(BL_age_cat), colour = "gold", fill = "transparent", width = 1.0) +
+  geom_bar(data = subset(GCKD_df4_FigS1, GCKD_df4_FigS1$diabetes == "2"), 
+           aes(BL_age_cat), colour = "darkseagreen4", fill = "transparent", width = 1.0) +
+  scale_y_continuous(limits=c(0,1200), breaks=c(0,300,600,900,1200)) +  
+  scale_x_discrete(limits = as.character(1:7)) +
+  coord_flip() +
+  theme(aspect.ratio = 3/2) + 
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+
+
+
 
 # Comparing generic purpose utility and privacy metrics
 df <- as_tibble(read.xlsx("GCKD_results_genericmetrics.xlsx", sep = ";"))
