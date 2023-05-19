@@ -1,2 +1,2 @@
 # UseCaseSpecificAnonymization
-Benchmarking generic health data and use case specific anonymization with scaling privacy in a real-world application. 
+Evaluating utility of anonymized datasets in a real-world application.  
